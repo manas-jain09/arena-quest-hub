@@ -5,23 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface User {
+  id: string;
   username: string;
   email: string;
   prn: string;
-  password: string;
 }
-
-// Sample user data for demo purposes
-const DEMO_USERS: User[] = [
-  {
-    username: "demo_user",
-    email: "demo@arenahq.com",
-    prn: "PRN123456",
-    password: "password123"
-  }
-];
 
 interface AuthCardProps {
   onSuccess: (user: User) => void;
@@ -33,45 +24,76 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
   const [email, setEmail] = useState("");
   const [prn, setPrn] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    if (isLogin) {
-      // Login logic
-      const user = DEMO_USERS.find(u => u.prn === prn && u.password === password);
-      if (user) {
+    try {
+      if (isLogin) {
+        // Login logic
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('prn', prn)
+          .eq('password', password)
+          .single();
+        
+        if (error) {
+          throw new Error('Invalid PRN or password');
+        }
+        
+        if (data) {
+          toast({
+            title: "Success",
+            description: "You have successfully logged in!",
+          });
+          onSuccess(data);
+        }
+      } else {
+        // Register logic
+        if (!username || !email || !prn || !password) {
+          throw new Error('All fields are required');
+        }
+        
+        // Check if user already exists
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('*')
+          .or(`email.eq.${email},prn.eq.${prn},username.eq.${username}`)
+          .maybeSingle();
+        
+        if (existingUser) {
+          throw new Error('User with this email, PRN, or username already exists');
+        }
+        
+        // Register the new user
+        const { data, error } = await supabase
+          .from('users')
+          .insert([{ username, email, prn, password }])
+          .select()
+          .single();
+        
+        if (error) {
+          throw new Error('Error creating account. Please try again.');
+        }
+        
         toast({
           title: "Success",
-          description: "You have successfully logged in!",
+          description: "Account created successfully! You can now log in.",
         });
-        onSuccess(user);
-      } else {
-        toast({
-          title: "Error",
-          description: "Invalid PRN or password",
-          variant: "destructive",
-        });
+        setIsLogin(true);
       }
-    } else {
-      // Register logic
-      if (!username || !email || !prn || !password) {
-        toast({
-          title: "Error",
-          description: "All fields are required",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // For demo purposes, we'll just simulate a successful registration
-      const newUser = { username, email, prn, password };
+    } catch (error: any) {
       toast({
-        title: "Success",
-        description: "Account created successfully! You can now log in.",
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
       });
-      setIsLogin(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -131,8 +153,8 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
               className="arena-input"
             />
           </div>
-          <Button type="submit" className="w-full arena-btn">
-            {isLogin ? "Sign In" : "Sign Up"}
+          <Button type="submit" className="w-full arena-btn" disabled={isLoading}>
+            {isLoading ? "Please wait..." : isLogin ? "Sign In" : "Sign Up"}
           </Button>
         </form>
         <div className="mt-4 text-center">

@@ -6,10 +6,10 @@ import { HomePage } from '@/pages/HomePage';
 import { Toaster } from '@/components/ui/toaster';
 
 interface User {
+  id: string;
   username: string;
   email: string;
   prn: string;
-  password: string;
 }
 
 const Index = () => {
@@ -28,7 +28,7 @@ const Index = () => {
       {user ? (
         <>
           <Navbar onLogout={handleLogout} />
-          <HomePage />
+          <HomePage userId={user.id} />
         </>
       ) : (
         <div className="container mx-auto px-4">

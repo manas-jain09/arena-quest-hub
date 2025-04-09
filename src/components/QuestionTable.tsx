@@ -6,15 +6,16 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Check, Link, Star, Filter, X } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Question {
   id: string;
   title: string;
-  practiceLink: string;
-  solutionLink: string;
+  practice_link: string;
+  solution_link: string;
   difficulty: 'easy' | 'medium' | 'hard';
-  isCompleted: boolean;
-  isMarkedForRevision: boolean;
+  is_completed: boolean;
+  is_marked_for_revision: boolean;
 }
 
 interface Topic {
@@ -26,9 +27,10 @@ interface Topic {
 interface QuestionTableProps {
   topics: Topic[];
   learningPathTitle: string;
+  userId: string;
 }
 
-export const QuestionTable = ({ topics: initialTopics, learningPathTitle }: QuestionTableProps) => {
+export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId }: QuestionTableProps) => {
   const [topics, setTopics] = useState<Topic[]>(initialTopics);
   const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({});
   const [filterStatus, setFilterStatus] = useState<'all' | 'solved' | 'unsolved' | 'revision'>('all');
@@ -42,66 +44,150 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle }: Ques
     }));
   };
 
-  const toggleCompleted = (topicId: string, questionId: string) => {
-    setTopics(currentTopics => 
-      currentTopics.map(topic => {
-        if (topic.id === topicId) {
-          return {
-            ...topic,
-            questions: topic.questions.map(question => {
-              if (question.id === questionId) {
-                const newCompletedState = !question.isCompleted;
-                // Show toast notification
-                toast({
-                  title: newCompletedState ? "Question marked as completed" : "Question marked as incomplete",
-                  description: `${question.title}`,
-                  duration: 2000,
-                });
-                return { ...question, isCompleted: newCompletedState };
-              }
-              return question;
-            })
-          };
-        }
-        return topic;
-      })
-    );
+  const toggleCompleted = async (topicId: string, questionId: string) => {
+    try {
+      // Find the current question
+      const currentTopic = topics.find(t => t.id === topicId);
+      const currentQuestion = currentTopic?.questions.find(q => q.id === questionId);
+      
+      if (!currentQuestion) return;
+      
+      const newCompletedState = !currentQuestion.is_completed;
+      
+      // Update the user_progress table
+      const { data: existingProgress } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('question_id', questionId)
+        .maybeSingle();
+      
+      if (existingProgress) {
+        // Update existing progress
+        await supabase
+          .from('user_progress')
+          .update({ is_completed: newCompletedState })
+          .eq('id', existingProgress.id);
+      } else {
+        // Create new progress
+        await supabase
+          .from('user_progress')
+          .insert([{ 
+            user_id: userId, 
+            question_id: questionId, 
+            is_completed: newCompletedState,
+            is_marked_for_revision: false
+          }]);
+      }
+      
+      // Update the state
+      setTopics(currentTopics => 
+        currentTopics.map(topic => {
+          if (topic.id === topicId) {
+            return {
+              ...topic,
+              questions: topic.questions.map(question => {
+                if (question.id === questionId) {
+                  // Show toast notification
+                  toast({
+                    title: newCompletedState ? "Question marked as completed" : "Question marked as incomplete",
+                    description: `${question.title}`,
+                    duration: 2000,
+                  });
+                  return { ...question, is_completed: newCompletedState };
+                }
+                return question;
+              })
+            };
+          }
+          return topic;
+        })
+      );
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Failed to update progress: ${error.message}`,
+        variant: "destructive",
+      });
+    }
   };
 
-  const toggleRevision = (topicId: string, questionId: string) => {
-    setTopics(currentTopics => 
-      currentTopics.map(topic => {
-        if (topic.id === topicId) {
-          return {
-            ...topic,
-            questions: topic.questions.map(question => {
-              if (question.id === questionId) {
-                const newRevisionState = !question.isMarkedForRevision;
-                // Show toast notification
-                toast({
-                  title: newRevisionState ? "Added to revision" : "Removed from revision",
-                  description: `${question.title}`,
-                  duration: 2000,
-                });
-                return { ...question, isMarkedForRevision: newRevisionState };
-              }
-              return question;
-            })
-          };
-        }
-        return topic;
-      })
-    );
+  const toggleRevision = async (topicId: string, questionId: string) => {
+    try {
+      // Find the current question
+      const currentTopic = topics.find(t => t.id === topicId);
+      const currentQuestion = currentTopic?.questions.find(q => q.id === questionId);
+      
+      if (!currentQuestion) return;
+      
+      const newRevisionState = !currentQuestion.is_marked_for_revision;
+      
+      // Update the user_progress table
+      const { data: existingProgress } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('question_id', questionId)
+        .maybeSingle();
+      
+      if (existingProgress) {
+        // Update existing progress
+        await supabase
+          .from('user_progress')
+          .update({ is_marked_for_revision: newRevisionState })
+          .eq('id', existingProgress.id);
+      } else {
+        // Create new progress
+        await supabase
+          .from('user_progress')
+          .insert([{ 
+            user_id: userId, 
+            question_id: questionId, 
+            is_completed: false,
+            is_marked_for_revision: newRevisionState
+          }]);
+      }
+      
+      // Update the state
+      setTopics(currentTopics => 
+        currentTopics.map(topic => {
+          if (topic.id === topicId) {
+            return {
+              ...topic,
+              questions: topic.questions.map(question => {
+                if (question.id === questionId) {
+                  // Show toast notification
+                  toast({
+                    title: newRevisionState ? "Added to revision" : "Removed from revision",
+                    description: `${question.title}`,
+                    duration: 2000,
+                  });
+                  return { ...question, is_marked_for_revision: newRevisionState };
+                }
+                return question;
+              })
+            };
+          }
+          return topic;
+        })
+      );
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Failed to update revision status: ${error.message}`,
+        variant: "destructive",
+      });
+    }
   };
 
   const filterQuestions = (questions: Question[]) => {
     switch (filterStatus) {
       case 'solved':
-        return questions.filter(q => q.isCompleted);
+        return questions.filter(q => q.is_completed);
       case 'unsolved':
-        return questions.filter(q => !q.isCompleted);
+        return questions.filter(q => !q.is_completed);
       case 'revision':
-        return questions.filter(q => q.isMarkedForRevision);
+        return questions.filter(q => q.is_marked_for_revision);
       default:
         return questions;
     }
@@ -123,7 +209,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle }: Ques
   // Calculate progress statistics
   const totalQuestions = topics.reduce((acc, topic) => acc + topic.questions.length, 0);
   const completedQuestions = topics.reduce((acc, topic) => 
-    acc + topic.questions.filter(q => q.isCompleted).length, 0);
+    acc + topic.questions.filter(q => q.is_completed).length, 0);
   const completionPercentage = totalQuestions > 0 
     ? Math.round((completedQuestions / totalQuestions) * 100) 
     : 0;
@@ -221,17 +307,17 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle }: Ques
                   </td>
                 </tr>
                 {expandedTopics[topic.id] && filterQuestions(topic.questions).map(question => (
-                  <tr key={question.id} className={`border-b border-arena-gray hover:bg-gray-50 ${question.isCompleted ? 'bg-green-50' : ''}`}>
+                  <tr key={question.id} className={`border-b border-arena-gray hover:bg-gray-50 ${question.is_completed ? 'bg-green-50' : ''}`}>
                     <td className="px-4 py-3 text-center">
                       <Checkbox 
-                        checked={question.isCompleted} 
+                        checked={question.is_completed} 
                         onCheckedChange={() => toggleCompleted(topic.id, question.id)}
                       />
                     </td>
                     <td className="px-4 py-3">{question.title}</td>
                     <td className="px-4 py-3">
                       <a 
-                        href={question.practiceLink} 
+                        href={question.practice_link} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-arena-red hover:underline inline-flex items-center gap-1"
@@ -242,7 +328,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle }: Ques
                     </td>
                     <td className="px-4 py-3">
                       <a 
-                        href={question.solutionLink} 
+                        href={question.solution_link} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-arena-red hover:underline inline-flex items-center gap-1"
@@ -258,7 +344,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle }: Ques
                     </td>
                     <td className="px-4 py-3 text-center">
                       <Button 
-                        variant={question.isMarkedForRevision ? "default" : "outline"} 
+                        variant={question.is_marked_for_revision ? "default" : "outline"} 
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -266,7 +352,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle }: Ques
                         }}
                         className="w-8 h-8 p-0"
                       >
-                        <Star size={14} className={question.isMarkedForRevision ? "text-yellow-400 fill-yellow-400" : ""} />
+                        <Star size={14} className={question.is_marked_for_revision ? "text-yellow-400 fill-yellow-400" : ""} />
                       </Button>
                     </td>
                   </tr>
