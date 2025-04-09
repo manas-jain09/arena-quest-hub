@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Check, Link, Star, Filter, X } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 export interface Question {
   id: string;
@@ -27,10 +28,12 @@ interface QuestionTableProps {
   learningPathTitle: string;
 }
 
-export const QuestionTable = ({ topics, learningPathTitle }: QuestionTableProps) => {
+export const QuestionTable = ({ topics: initialTopics, learningPathTitle }: QuestionTableProps) => {
+  const [topics, setTopics] = useState<Topic[]>(initialTopics);
   const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({});
   const [filterStatus, setFilterStatus] = useState<'all' | 'solved' | 'unsolved' | 'revision'>('all');
   const [showFilter, setShowFilter] = useState(false);
+  const { toast } = useToast();
 
   const toggleTopic = (topicId: string) => {
     setExpandedTopics(prev => ({
@@ -40,13 +43,55 @@ export const QuestionTable = ({ topics, learningPathTitle }: QuestionTableProps)
   };
 
   const toggleCompleted = (topicId: string, questionId: string) => {
-    // In a real app, this would update the state and persist to a database
-    console.log(`Toggle completed for question ${questionId} in topic ${topicId}`);
+    setTopics(currentTopics => 
+      currentTopics.map(topic => {
+        if (topic.id === topicId) {
+          return {
+            ...topic,
+            questions: topic.questions.map(question => {
+              if (question.id === questionId) {
+                const newCompletedState = !question.isCompleted;
+                // Show toast notification
+                toast({
+                  title: newCompletedState ? "Question marked as completed" : "Question marked as incomplete",
+                  description: `${question.title}`,
+                  duration: 2000,
+                });
+                return { ...question, isCompleted: newCompletedState };
+              }
+              return question;
+            })
+          };
+        }
+        return topic;
+      })
+    );
   };
 
   const toggleRevision = (topicId: string, questionId: string) => {
-    // In a real app, this would update the state and persist to a database
-    console.log(`Toggle revision for question ${questionId} in topic ${topicId}`);
+    setTopics(currentTopics => 
+      currentTopics.map(topic => {
+        if (topic.id === topicId) {
+          return {
+            ...topic,
+            questions: topic.questions.map(question => {
+              if (question.id === questionId) {
+                const newRevisionState = !question.isMarkedForRevision;
+                // Show toast notification
+                toast({
+                  title: newRevisionState ? "Added to revision" : "Removed from revision",
+                  description: `${question.title}`,
+                  duration: 2000,
+                });
+                return { ...question, isMarkedForRevision: newRevisionState };
+              }
+              return question;
+            })
+          };
+        }
+        return topic;
+      })
+    );
   };
 
   const filterQuestions = (questions: Question[]) => {
@@ -75,11 +120,30 @@ export const QuestionTable = ({ topics, learningPathTitle }: QuestionTableProps)
     }
   };
 
+  // Calculate progress statistics
+  const totalQuestions = topics.reduce((acc, topic) => acc + topic.questions.length, 0);
+  const completedQuestions = topics.reduce((acc, topic) => 
+    acc + topic.questions.filter(q => q.isCompleted).length, 0);
+  const completionPercentage = totalQuestions > 0 
+    ? Math.round((completedQuestions / totalQuestions) * 100) 
+    : 0;
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <div className="p-4 bg-arena-lightGray border-b border-arena-gray flex justify-between items-center">
         <h2 className="text-xl font-semibold text-arena-darkGray">{learningPathTitle}</h2>
         <div className="flex items-center space-x-2">
+          {/* Progress indicator */}
+          <div className="hidden md:flex items-center gap-2 mr-4 text-sm text-arena-darkGray">
+            <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-arena-red" 
+                style={{ width: `${completionPercentage}%` }}
+              ></div>
+            </div>
+            <span>{completedQuestions}/{totalQuestions} ({completionPercentage}%)</span>
+          </div>
+          
           <Button 
             variant="outline" 
             size="sm" 
@@ -157,7 +221,7 @@ export const QuestionTable = ({ topics, learningPathTitle }: QuestionTableProps)
                   </td>
                 </tr>
                 {expandedTopics[topic.id] && filterQuestions(topic.questions).map(question => (
-                  <tr key={question.id} className="border-b border-arena-gray hover:bg-gray-50">
+                  <tr key={question.id} className={`border-b border-arena-gray hover:bg-gray-50 ${question.isCompleted ? 'bg-green-50' : ''}`}>
                     <td className="px-4 py-3 text-center">
                       <Checkbox 
                         checked={question.isCompleted} 
@@ -196,7 +260,10 @@ export const QuestionTable = ({ topics, learningPathTitle }: QuestionTableProps)
                       <Button 
                         variant={question.isMarkedForRevision ? "default" : "outline"} 
                         size="sm"
-                        onClick={() => toggleRevision(topic.id, question.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleRevision(topic.id, question.id);
+                        }}
                         className="w-8 h-8 p-0"
                       >
                         <Star size={14} className={question.isMarkedForRevision ? "text-yellow-400 fill-yellow-400" : ""} />

@@ -1,13 +1,20 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, BookText, Trophy, Wrench, LogOut } from 'lucide-react';
+import { Home, BookText, Trophy, Wrench, LogOut, Menu, X } from 'lucide-react';
+import { useState } from 'react';
 
 interface NavbarProps {
   onLogout: () => void;
 }
 
 export const Navbar = ({ onLogout }: NavbarProps) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
   return (
     <nav className="bg-white border-b border-arena-gray shadow-sm sticky top-0 z-10">
       <div className="container mx-auto px-4">
@@ -44,14 +51,39 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
           </div>
           
           <div className="md:hidden">
-            {/* Mobile menu button */}
-            <Button variant="ghost" className="p-1">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+            <Button variant="ghost" className="p-1" onClick={toggleMobileMenu}>
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </Button>
           </div>
         </div>
+        
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-arena-gray">
+            <div className="flex flex-col py-2">
+              <Link to="/" className="arena-nav-link active flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
+                <Home size={16} />
+                <span>Home</span>
+              </Link>
+              <a href="https://quiz.arenahq-mitwpu.in" target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
+                <BookText size={16} />
+                <span>ArenaQuiz</span>
+              </a>
+              <a href="https://contest.arenahq-mitwpu.in" target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
+                <Trophy size={16} />
+                <span>ArenaContest</span>
+              </a>
+              <a href="https://tools.arenahq-mitwpu.in" target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
+                <Wrench size={16} />
+                <span>ArenaTools</span>
+              </a>
+              <Button onClick={() => { onLogout(); setMobileMenuOpen(false); }} variant="ghost" className="arena-nav-link flex items-center gap-1 py-3 justify-start">
+                <LogOut size={16} />
+                <span>Logout</span>
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );

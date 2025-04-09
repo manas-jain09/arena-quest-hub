@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { AuthCard } from '@/components/AuthCard';
 import { Navbar } from '@/components/Navbar';
 import { HomePage } from '@/pages/HomePage';
+import { Toaster } from '@/components/ui/toaster';
 
 interface User {
   username: string;
@@ -34,6 +35,7 @@ const Index = () => {
           <AuthCard onSuccess={handleLogin} />
         </div>
       )}
+      <Toaster />
     </div>
   );
 };
