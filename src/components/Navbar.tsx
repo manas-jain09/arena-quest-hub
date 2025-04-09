@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, BookText, Trophy, Tool, LogOut } from 'lucide-react';
+import { Home, BookText, Trophy, Wrench, LogOut } from 'lucide-react';
 
 interface NavbarProps {
   onLogout: () => void;
@@ -33,7 +33,7 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <span>ArenaContest</span>
               </a>
               <a href="https://tools.arenahq-mitwpu.in" target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1">
-                <Tool size={16} />
+                <Wrench size={16} />
                 <span>ArenaTools</span>
               </a>
               <Button onClick={onLogout} variant="ghost" className="arena-nav-link flex items-center gap-1">
