@@ -1,12 +1,39 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from 'react';
+import { AuthCard } from '@/components/AuthCard';
+import { Navbar } from '@/components/Navbar';
+import { HomePage } from '@/pages/HomePage';
+
+interface User {
+  username: string;
+  email: string;
+  prn: string;
+  password: string;
+}
 
 const Index = () => {
+  const [user, setUser] = useState<User | null>(null);
+
+  const handleLogin = (userData: User) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      {user ? (
+        <>
+          <Navbar onLogout={handleLogout} />
+          <HomePage />
+        </>
+      ) : (
+        <div className="container mx-auto px-4">
+          <AuthCard onSuccess={handleLogin} />
+        </div>
+      )}
     </div>
   );
 };
