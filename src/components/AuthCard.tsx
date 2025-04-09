@@ -165,14 +165,6 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
             {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
           </button>
         </div>
-        
-        {isLogin && (
-          <div className="mt-4 p-3 bg-gray-50 rounded-md">
-            <p className="text-sm text-gray-600 font-medium">Demo Credentials</p>
-            <p className="text-xs text-gray-500">PRN: PRN123456</p>
-            <p className="text-xs text-gray-500">Password: password123</p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
