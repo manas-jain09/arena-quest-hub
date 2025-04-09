@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { LearningPathCard } from '@/components/LearningPathCard';
 import { QuestionTable } from '@/components/QuestionTable';
@@ -10,6 +9,8 @@ interface LearningPath {
   title: string;
   description: string;
   difficulty: 'easy' | 'medium' | 'hard';
+  topicsCount?: number;
+  questionsCount?: number;
 }
 
 interface Topic {
@@ -40,7 +41,6 @@ export const HomePage = ({ userId }: HomePageProps) => {
   const [topicsWithQuestions, setTopicsWithQuestions] = useState<Topic[]>([]);
   const { toast } = useToast();
   
-  // Fetch learning paths
   useEffect(() => {
     const fetchLearningPaths = async () => {
       try {
@@ -55,13 +55,11 @@ export const HomePage = ({ userId }: HomePageProps) => {
         if (data) {
           const pathsWithCount = await Promise.all(
             data.map(async (path) => {
-              // Get topics count for this learning path
               const { count: topicsCount, error: topicsError } = await supabase
                 .from('topics')
                 .select('*', { count: 'exact', head: true })
                 .eq('learning_path_id', path.id);
               
-              // Get questions count for this learning path
               const { data: topics, error: questionsError } = await supabase
                 .from('topics')
                 .select('id')
@@ -107,14 +105,12 @@ export const HomePage = ({ userId }: HomePageProps) => {
     fetchLearningPaths();
   }, [toast]);
   
-  // Fetch topics and questions when a learning path is selected
   useEffect(() => {
     if (!selectedPathId) return;
     
     const fetchTopicsAndQuestions = async () => {
       setIsLoading(true);
       try {
-        // Fetch topics for the selected learning path
         const { data: topics, error: topicsError } = await supabase
           .from('topics')
           .select('*')
@@ -128,7 +124,6 @@ export const HomePage = ({ userId }: HomePageProps) => {
           throw new Error('No topics found');
         }
         
-        // Fetch all questions for these topics
         const topicsWithQuestions = await Promise.all(
           topics.map(async (topic) => {
             const { data: questions, error: questionsError } = await supabase
@@ -140,7 +135,6 @@ export const HomePage = ({ userId }: HomePageProps) => {
               throw questionsError;
             }
             
-            // Fetch user progress for these questions
             const { data: progress, error: progressError } = await supabase
               .from('user_progress')
               .select('*')
@@ -151,7 +145,6 @@ export const HomePage = ({ userId }: HomePageProps) => {
               throw progressError;
             }
             
-            // Map questions with user progress
             const questionsWithProgress = questions?.map(question => {
               const userProgress = progress?.find(p => p.question_id === question.id);
               return {
