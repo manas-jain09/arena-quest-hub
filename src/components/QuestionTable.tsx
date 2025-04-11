@@ -206,6 +206,11 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
     }
   };
 
+  // Function to open code editor in a new tab
+  const openCodeEditor = (questionId: string) => {
+    window.open(`/question/${questionId}`, '_blank');
+  };
+
   // Calculate progress statistics
   const totalQuestions = topics.reduce((acc, topic) => acc + topic.questions.length, 0);
   const completedQuestions = topics.reduce((acc, topic) => 
@@ -316,15 +321,18 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                     </td>
                     <td className="px-4 py-3">{question.title}</td>
                     <td className="px-4 py-3">
-                      <a 
-                        href={question.practice_link} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
+                      <Button 
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openCodeEditor(question.id);
+                        }}
                         className="text-arena-red hover:underline inline-flex items-center gap-1"
                       >
                         <Link size={14} />
                         Practice
-                      </a>
+                      </Button>
                     </td>
                     <td className="px-4 py-3">
                       <a 
