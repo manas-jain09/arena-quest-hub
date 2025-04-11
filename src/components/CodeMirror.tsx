@@ -4,10 +4,17 @@ import { EditorView, basicSetup } from 'codemirror';
 import { EditorState } from '@codemirror/state';
 import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
-import { html } from '@codemirror/lang-html';
 import { cpp } from '@codemirror/lang-cpp';
 import { java } from '@codemirror/lang-java';
 import { oneDark } from '@codemirror/theme-one-dark';
+
+// Import HTML language support if available
+let html: any = null;
+try {
+  html = require('@codemirror/lang-html').html;
+} catch (e) {
+  console.warn('HTML language support not available', e);
+}
 
 interface CodeMirrorProps {
   value: string;
@@ -46,7 +53,8 @@ const CodeMirror = ({ value, onChange, language }: CodeMirrorProps) => {
           languageExtension = javascript();
           break;
         case 'html':
-          languageExtension = html();
+          // Only use html language if successfully imported
+          languageExtension = html ? html() : javascript();
           break;
         default:
           languageExtension = cpp(); // Default to C++
