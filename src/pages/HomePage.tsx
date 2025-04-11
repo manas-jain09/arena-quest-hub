@@ -23,7 +23,6 @@ interface Topic {
 interface Question {
   id: string;
   title: string;
-  practice_link: string;
   solution_link: string;
   difficulty: 'easy' | 'medium' | 'hard';
   is_completed: boolean;

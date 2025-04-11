@@ -11,7 +11,6 @@ import { supabase } from '@/integrations/supabase/client';
 export interface Question {
   id: string;
   title: string;
-  practice_link: string;
   solution_link: string;
   difficulty: 'easy' | 'medium' | 'hard';
   is_completed: boolean;
@@ -36,6 +35,27 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
   const [filterStatus, setFilterStatus] = useState<'all' | 'solved' | 'unsolved' | 'revision'>('all');
   const [showFilter, setShowFilter] = useState(false);
   const { toast } = useToast();
+
+  // Use this function to get PRN for practice link generation
+  const getPRN = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      
+      // Fetch PRN from users table using the user's ID
+      const { data, error } = await supabase
+        .from('users')
+        .select('prn')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) throw error;
+      return data?.prn || null;
+    } catch (error: any) {
+      console.error('Error fetching PRN:', error.message);
+      return null;
+    }
+  };
 
   const toggleTopic = (topicId: string) => {
     setExpandedTopics(prev => ({
@@ -206,6 +226,22 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
     }
   };
 
+  // Handle opening the practice link with the new format
+  const handlePracticeClick = async (questionId: string) => {
+    const prn = await getPRN();
+    if (!prn) {
+      toast({
+        title: "Error",
+        description: "Unable to retrieve your PRN. Please try again later.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Open the custom formatted link in a new tab
+    window.open(`https://contest.arenahq-mitwpu.edu.in/${questionId}/${prn}`, '_blank');
+  };
+
   // Calculate progress statistics
   const totalQuestions = topics.reduce((acc, topic) => acc + topic.questions.length, 0);
   const completedQuestions = topics.reduce((acc, topic) => 
@@ -316,15 +352,18 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                     </td>
                     <td className="px-4 py-3">{question.title}</td>
                     <td className="px-4 py-3">
-                      <a 
-                        href={question.practice_link} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-arena-red hover:underline inline-flex items-center gap-1"
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePracticeClick(question.id);
+                        }}
+                        className="text-arena-red hover:underline inline-flex items-center gap-1 p-0 h-auto"
                       >
                         <Link size={14} />
                         Practice
-                      </a>
+                      </Button>
                     </td>
                     <td className="px-4 py-3">
                       <a 
