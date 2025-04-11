@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -39,14 +38,11 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
   // Use this function to get PRN for practice link generation
   const getPRN = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
-      
-      // Fetch PRN from users table using the user's ID
+      // Fetch PRN from users table using the userId prop
       const { data, error } = await supabase
         .from('users')
         .select('prn')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single();
       
       if (error) throw error;
