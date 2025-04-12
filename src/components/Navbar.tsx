@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, BookText, Trophy, Wrench, LogOut, Menu, X } from 'lucide-react';
+import { Home, BookText, Trophy, Wrench, MessageSquare, LogOut, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface NavbarProps {
@@ -30,6 +30,10 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
               <Link to="/" className="arena-nav-link active flex items-center gap-1">
                 <Home size={16} />
                 <span>Home</span>
+              </Link>
+              <Link to="/forums" className="arena-nav-link flex items-center gap-1">
+                <MessageSquare size={16} />
+                <span>ArenaForums</span>
               </Link>
               <a href="https://quiz.arenahq-mitwpu.in" target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1">
                 <BookText size={16} />
@@ -64,6 +68,10 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
               <Link to="/" className="arena-nav-link active flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
                 <Home size={16} />
                 <span>Home</span>
+              </Link>
+              <Link to="/forums" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
+                <MessageSquare size={16} />
+                <span>ArenaForums</span>
               </Link>
               <a href="https://quiz.arenahq-mitwpu.in" target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
                 <BookText size={16} />
