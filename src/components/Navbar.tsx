@@ -15,6 +15,14 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
+  // Get PRN from URL if available - for creating the Yodha profile link
+  const getPRN = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('prn') || '';
+  };
+
+  const yodhaProfileUrl = `/yodha?prn=${getPRN()}`;
+
   return (
     <nav className="bg-white border-b border-arena-gray shadow-sm sticky top-0 z-10">
       <div className="container mx-auto px-4">
@@ -43,10 +51,10 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Wrench size={16} />
                 <span>ArenaTools</span>
               </a>
-              <Link to="/yodha" className="arena-nav-link flex items-center gap-1">
+              <a href={yodhaProfileUrl} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1">
                 <UserCircle2 size={16} />
                 <span>Yodha</span>
-              </Link>
+              </a>
               <Button onClick={onLogout} variant="ghost" className="arena-nav-link flex items-center gap-1">
                 <LogOut size={16} />
                 <span>Logout</span>
@@ -81,10 +89,10 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Wrench size={16} />
                 <span>ArenaTools</span>
               </a>
-              <Link to="/yodha" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
+              <a href={yodhaProfileUrl} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
                 <UserCircle2 size={16} />
                 <span>Yodha</span>
-              </Link>
+              </a>
               <Button onClick={() => { onLogout(); setMobileMenuOpen(false); }} variant="ghost" className="arena-nav-link flex items-center gap-1 py-3 justify-start">
                 <LogOut size={16} />
                 <span>Logout</span>
