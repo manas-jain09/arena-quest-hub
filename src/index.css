@@ -91,4 +91,12 @@
   .arena-badge-hard {
     @apply bg-arena-lightRed text-arena-darkRed;
   }
+  
+  /* Heatmap styling */
+  .heatmap-cell-0 { @apply bg-gray-100; }
+  .heatmap-cell-1 { @apply bg-green-200; }
+  .heatmap-cell-2 { @apply bg-green-300; }
+  .heatmap-cell-3 { @apply bg-green-500; }
+  .heatmap-cell-4 { @apply bg-green-700; }
 }
+
