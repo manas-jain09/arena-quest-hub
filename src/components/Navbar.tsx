@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, BookText, Trophy, Wrench, LogOut, Menu, X } from 'lucide-react';
+import { Home, BookText, Trophy, Wrench, LogOut, Menu, X, UserCircle2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface NavbarProps {
@@ -43,6 +43,10 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Wrench size={16} />
                 <span>ArenaTools</span>
               </a>
+              <Link to="/yodha" className="arena-nav-link flex items-center gap-1">
+                <UserCircle2 size={16} />
+                <span>Yodha</span>
+              </Link>
               <Button onClick={onLogout} variant="ghost" className="arena-nav-link flex items-center gap-1">
                 <LogOut size={16} />
                 <span>Logout</span>
@@ -77,6 +81,10 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Wrench size={16} />
                 <span>ArenaTools</span>
               </a>
+              <Link to="/yodha" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
+                <UserCircle2 size={16} />
+                <span>Yodha</span>
+              </Link>
               <Button onClick={() => { onLogout(); setMobileMenuOpen(false); }} variant="ghost" className="arena-nav-link flex items-center gap-1 py-3 justify-start">
                 <LogOut size={16} />
                 <span>Logout</span>
