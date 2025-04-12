@@ -91,4 +91,45 @@
   .arena-badge-hard {
     @apply bg-arena-lightRed text-arena-darkRed;
   }
+  
+  /* Forum content styling */
+  .forum-content h2 {
+    @apply text-2xl font-bold mb-4 text-arena-darkGray mt-6;
+  }
+  
+  .forum-content h3 {
+    @apply text-xl font-semibold mb-3 text-arena-darkGray mt-5;
+  }
+  
+  .forum-content p {
+    @apply mb-4 leading-relaxed text-arena-darkGray;
+  }
+  
+  .forum-content ul {
+    @apply mb-4 pl-5 list-disc;
+  }
+  
+  .forum-content ol {
+    @apply mb-4 pl-5 list-decimal;
+  }
+  
+  .forum-content li {
+    @apply mb-2;
+  }
+  
+  .forum-content a {
+    @apply text-arena-red hover:underline;
+  }
+  
+  .forum-content blockquote {
+    @apply border-l-4 border-arena-gray pl-4 italic my-4;
+  }
+  
+  .forum-content code {
+    @apply bg-arena-lightGray px-2 py-1 rounded text-sm;
+  }
+  
+  .forum-content pre {
+    @apply bg-arena-lightGray p-4 rounded my-4 overflow-x-auto;
+  }
 }
