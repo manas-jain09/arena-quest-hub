@@ -35,10 +35,8 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
   const [showFilter, setShowFilter] = useState(false);
   const { toast } = useToast();
 
-  // Use this function to get PRN for practice link generation
   const getPRN = async () => {
     try {
-      // Fetch PRN from users table using the userId prop
       const { data, error } = await supabase
         .from('users')
         .select('prn')
@@ -62,7 +60,6 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
 
   const toggleCompleted = async (topicId: string, questionId: string) => {
     try {
-      // Find the current question
       const currentTopic = topics.find(t => t.id === topicId);
       const currentQuestion = currentTopic?.questions.find(q => q.id === questionId);
       
@@ -70,7 +67,6 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
       
       const newCompletedState = !currentQuestion.is_completed;
       
-      // Update the user_progress table
       const { data: existingProgress } = await supabase
         .from('user_progress')
         .select('*')
@@ -79,13 +75,11 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
         .maybeSingle();
       
       if (existingProgress) {
-        // Update existing progress
         await supabase
           .from('user_progress')
           .update({ is_completed: newCompletedState })
           .eq('id', existingProgress.id);
       } else {
-        // Create new progress
         await supabase
           .from('user_progress')
           .insert([{ 
@@ -96,7 +90,6 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
           }]);
       }
       
-      // Update the state
       setTopics(currentTopics => 
         currentTopics.map(topic => {
           if (topic.id === topicId) {
@@ -104,7 +97,6 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
               ...topic,
               questions: topic.questions.map(question => {
                 if (question.id === questionId) {
-                  // Show toast notification
                   toast({
                     title: newCompletedState ? "Question marked as completed" : "Question marked as incomplete",
                     description: `${question.title}`,
@@ -130,7 +122,6 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
 
   const toggleRevision = async (topicId: string, questionId: string) => {
     try {
-      // Find the current question
       const currentTopic = topics.find(t => t.id === topicId);
       const currentQuestion = currentTopic?.questions.find(q => q.id === questionId);
       
@@ -138,7 +129,6 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
       
       const newRevisionState = !currentQuestion.is_marked_for_revision;
       
-      // Update the user_progress table
       const { data: existingProgress } = await supabase
         .from('user_progress')
         .select('*')
@@ -147,13 +137,11 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
         .maybeSingle();
       
       if (existingProgress) {
-        // Update existing progress
         await supabase
           .from('user_progress')
           .update({ is_marked_for_revision: newRevisionState })
           .eq('id', existingProgress.id);
       } else {
-        // Create new progress
         await supabase
           .from('user_progress')
           .insert([{ 
@@ -164,7 +152,6 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
           }]);
       }
       
-      // Update the state
       setTopics(currentTopics => 
         currentTopics.map(topic => {
           if (topic.id === topicId) {
@@ -172,7 +159,6 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
               ...topic,
               questions: topic.questions.map(question => {
                 if (question.id === questionId) {
-                  // Show toast notification
                   toast({
                     title: newRevisionState ? "Added to revision" : "Removed from revision",
                     description: `${question.title}`,
@@ -222,7 +208,6 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
     }
   };
 
-  // Handle opening the practice link with the new format
   const handlePracticeClick = async (questionId: string) => {
     const prn = await getPRN();
     if (!prn) {
@@ -234,11 +219,9 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
       return;
     }
     
-    // Open the custom formatted link in a new tab
-    window.open(`https://contest.arenahq-mitwpu.edu.in/${questionId}/${prn}`, '_blank');
+    window.open(`https://contest.arenha-mitwpu.in/${questionId}/${prn}`, '_blank');
   };
 
-  // Calculate progress statistics
   const totalQuestions = topics.reduce((acc, topic) => acc + topic.questions.length, 0);
   const completedQuestions = topics.reduce((acc, topic) => 
     acc + topic.questions.filter(q => q.is_completed).length, 0);
@@ -251,7 +234,6 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
       <div className="p-4 bg-arena-lightGray border-b border-arena-gray flex justify-between items-center">
         <h2 className="text-xl font-semibold text-arena-darkGray">{learningPathTitle}</h2>
         <div className="flex items-center space-x-2">
-          {/* Progress indicator */}
           <div className="hidden md:flex items-center gap-2 mr-4 text-sm text-arena-darkGray">
             <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
               <div 
