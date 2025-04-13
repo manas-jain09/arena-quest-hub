@@ -15,7 +15,7 @@ interface Forum {
   created_at: string;
 }
 
-export const ForumsPage = () => {
+const ForumsPage = () => {
   const [forums, setForums] = useState<Forum[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -53,10 +53,15 @@ export const ForumsPage = () => {
     navigate(`/forums/${forumId}`);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('userId');
+    navigate('/');
+  };
+
   if (loading) {
     return (
       <div>
-        <Navbar onLogout={() => {}} />
+        <Navbar onLogout={handleLogout} />
         <div className="flex justify-center items-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-arena-red" />
         </div>
@@ -72,7 +77,7 @@ export const ForumsPage = () => {
 
   return (
     <div>
-      <Navbar onLogout={() => {}} />
+      <Navbar onLogout={handleLogout} />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-arena-darkGray mb-8">ArenaForums</h1>
         
