@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      badge_types: {
+        Row: {
+          background_color: string
+          created_at: string
+          description: string | null
+          icon_name: string
+          id: string
+          name: string
+          text_color: string
+        }
+        Insert: {
+          background_color: string
+          created_at?: string
+          description?: string | null
+          icon_name: string
+          id?: string
+          name: string
+          text_color: string
+        }
+        Update: {
+          background_color?: string
+          created_at?: string
+          description?: string | null
+          icon_name?: string
+          id?: string
+          name?: string
+          text_color?: string
+        }
+        Relationships: []
+      }
       contest_questions: {
         Row: {
           contest_id: string | null
@@ -303,6 +333,38 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          cgpa: number | null
+          created_at: string
+          id: string
+          real_name: string
+          updated_at: string
+        }
+        Insert: {
+          cgpa?: number | null
+          created_at?: string
+          id: string
+          real_name: string
+          updated_at?: string
+        }
+        Update: {
+          cgpa?: number | null
+          created_at?: string
+          id?: string
+          real_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey1"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       questions: {
         Row: {
           created_at: string
@@ -503,6 +565,42 @@ export type Database = {
           },
         ]
       }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badge_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_progress: {
         Row: {
           created_at: string
@@ -548,44 +646,96 @@ export type Database = {
           },
         ]
       }
+      user_skills: {
+        Row: {
+          created_at: string
+          id: string
+          skill_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          skill_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          skill_name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_skills_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_activity_date: string | null
+          max_streak: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          max_streak?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          max_streak?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_streaks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
-          cgpa: number | null
-          college: string | null
           created_at: string
           email: string
           id: string
-          linkedin: string | null
-          location: string | null
-          name: string | null
           password: string
           prn: string
           updated_at: string
           username: string
         }
         Insert: {
-          cgpa?: number | null
-          college?: string | null
           created_at?: string
           email: string
           id?: string
-          linkedin?: string | null
-          location?: string | null
-          name?: string | null
           password: string
           prn: string
           updated_at?: string
           username: string
         }
         Update: {
-          cgpa?: number | null
-          college?: string | null
           created_at?: string
           email?: string
           id?: string
-          linkedin?: string | null
-          location?: string | null
-          name?: string | null
           password?: string
           prn?: string
           updated_at?: string

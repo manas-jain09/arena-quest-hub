@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, BookText, Trophy, Wrench, MessageSquare, LogOut, Menu, X } from 'lucide-react';
+import { Home, BookText, Trophy, Wrench, MessageSquare, LogOut, Menu, X, User } from 'lucide-react';
 import { useState } from 'react';
 
 interface NavbarProps {
@@ -47,6 +47,10 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Wrench size={16} />
                 <span>ArenaTools</span>
               </a>
+              <a href={`https://yodha.arenahq-mitwpu.in/profile/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1">
+                <User size={16} />
+                <span>Yodha</span>
+              </a>
               <Button onClick={onLogout} variant="ghost" className="arena-nav-link flex items-center gap-1">
                 <LogOut size={16} />
                 <span>Logout</span>
@@ -84,6 +88,10 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
               <a href="https://tools.arenahq-mitwpu.in" target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
                 <Wrench size={16} />
                 <span>ArenaTools</span>
+              </a>
+              <a href={`https://yodha.arenahq-mitwpu.in/profile/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
+                <User size={16} />
+                <span>Yodha</span>
               </a>
               <Button onClick={() => { onLogout(); setMobileMenuOpen(false); }} variant="ghost" className="arena-nav-link flex items-center gap-1 py-3 justify-start">
                 <LogOut size={16} />

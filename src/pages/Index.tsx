@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthCard } from '@/components/AuthCard';
 import { Navbar } from '@/components/Navbar';
 import { HomePage } from '@/pages/HomePage';
@@ -17,10 +17,14 @@ const Index = () => {
 
   const handleLogin = (userData: User) => {
     setUser(userData);
+    // Store userId in localStorage for use in Yodha link
+    localStorage.setItem('userId', userData.id);
   };
 
   const handleLogout = () => {
     setUser(null);
+    // Clear userId from localStorage on logout
+    localStorage.removeItem('userId');
   };
 
   return (
