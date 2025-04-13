@@ -219,7 +219,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
       return;
     }
     
-    window.open(`https://contest.arenha-mitwpu.in/${questionId}/${prn}`, '_blank');
+    window.open(`https://contest.arenhq-mitwpu.in/${questionId}/${prn}`, '_blank');
   };
 
   const totalQuestions = topics.reduce((acc, topic) => acc + topic.questions.length, 0);
