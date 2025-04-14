@@ -21,7 +21,7 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <h1 className="text-xl font-bold text-arena-red">ArenaHQ</h1>
+              <h1 className="text-xl font-bold text-arena-red">AstraLearn</h1>
             </Link>
           </div>
           
