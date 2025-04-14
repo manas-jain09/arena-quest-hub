@@ -302,9 +302,9 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
           <thead>
             <tr className="text-left border-b border-arena-gray">
               <th className="arena-table-header">Mark Done</th>
-              <th className="arena-table-header">Question Title</th>
+              <th className="arena-table-header">Title</th>
               <th className="arena-table-header">Practice</th>
-              <th className="arena-table-header">Solution</th>
+              <th className="arena-table-header">Article</th>
               <th className="arena-table-header">Difficulty</th>
               <th className="arena-table-header">Mark for Revision</th>
             </tr>
