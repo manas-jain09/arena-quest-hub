@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, BookText, Trophy, Wrench, MessageSquare, LogOut, Menu, X, User } from 'lucide-react';
+import { Home, MessageSquare, LogOut, Menu, X, User } from 'lucide-react';
 import { useState } from 'react';
 
 interface NavbarProps {
@@ -35,18 +35,6 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <MessageSquare size={16} />
                 <span>ArenaForums</span>
               </Link>
-              <a href="https://quiz.arenahq-mitwpu.in" target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1">
-                <BookText size={16} />
-                <span>ArenaQuiz</span>
-              </a>
-              <a href="https://contest.arenahq-mitwpu.in" target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1">
-                <Trophy size={16} />
-                <span>ArenaContest</span>
-              </a>
-              <a href="https://tools.arenahq-mitwpu.in" target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1">
-                <Wrench size={16} />
-                <span>ArenaTools</span>
-              </a>
               <a href={`https://yodha.arenahq-mitwpu.in/profile/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1">
                 <User size={16} />
                 <span>Yodha</span>
@@ -77,18 +65,6 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <MessageSquare size={16} />
                 <span>ArenaForums</span>
               </Link>
-              <a href="https://quiz.arenahq-mitwpu.in" target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
-                <BookText size={16} />
-                <span>ArenaQuiz</span>
-              </a>
-              <a href="https://contest.arenahq-mitwpu.in" target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
-                <Trophy size={16} />
-                <span>ArenaContest</span>
-              </a>
-              <a href="https://tools.arenahq-mitwpu.in" target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
-                <Wrench size={16} />
-                <span>ArenaTools</span>
-              </a>
               <a href={`https://yodha.arenahq-mitwpu.in/profile/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
                 <User size={16} />
                 <span>Yodha</span>

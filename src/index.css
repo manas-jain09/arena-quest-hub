@@ -92,6 +92,10 @@
     @apply bg-arena-lightRed text-arena-darkRed;
   }
   
+  .arena-badge-theory {
+    @apply bg-blue-100 text-blue-800;
+  }
+  
   /* Forum content styling */
   .forum-content h2 {
     @apply text-2xl font-bold mb-4 text-arena-darkGray mt-6;

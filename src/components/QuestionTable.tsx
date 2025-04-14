@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Check, Link, Star, Filter, X } from 'lucide-react';
+import { Check, ExternalLink, Star, Filter, X, BookText, Code } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 
@@ -11,7 +12,7 @@ export interface Question {
   id: string;
   title: string;
   solution_link: string;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: 'easy' | 'medium' | 'hard' | 'theory';
   is_completed: boolean;
   is_marked_for_revision: boolean;
 }
@@ -203,23 +204,15 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
         return 'arena-badge-medium';
       case 'hard':
         return 'arena-badge-hard';
+      case 'theory':
+        return 'arena-badge-theory';
       default:
         return '';
     }
   };
 
   const handlePracticeClick = async (questionId: string) => {
-    const prn = await getPRN();
-    if (!prn) {
-      toast({
-        title: "Error",
-        description: "Unable to retrieve your PRN. Please try again later.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    window.open(`https://contest.arenahq-mitwpu.in/${questionId}/${prn}`, '_blank');
+    window.open(questionId, '_blank');
   };
 
   const totalQuestions = topics.reduce((acc, topic) => acc + topic.questions.length, 0);
@@ -339,7 +332,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                         }}
                         className="text-arena-red hover:underline inline-flex items-center gap-1 p-0 h-auto"
                       >
-                        <Link size={14} />
+                        <Code size={14} />
                         Practice
                       </Button>
                     </td>
@@ -350,8 +343,8 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                         rel="noopener noreferrer"
                         className="text-arena-red hover:underline inline-flex items-center gap-1"
                       >
-                        <Link size={14} />
-                        Solution
+                        <BookText size={14} />
+                        Article
                       </a>
                     </td>
                     <td className="px-4 py-3">

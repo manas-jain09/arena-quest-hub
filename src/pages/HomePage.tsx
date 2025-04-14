@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { LearningPathCard } from '@/components/LearningPathCard';
 import { QuestionTable } from '@/components/QuestionTable';
@@ -8,7 +9,7 @@ interface LearningPath {
   id: string;
   title: string;
   description: string;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: 'easy' | 'medium' | 'hard' | 'theory';
   topicsCount?: number;
   questionsCount?: number;
 }
@@ -24,7 +25,7 @@ interface Question {
   id: string;
   title: string;
   solution_link: string;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: 'easy' | 'medium' | 'hard' | 'theory';
   is_completed: boolean;
   is_marked_for_revision: boolean;
 }
@@ -32,6 +33,17 @@ interface Question {
 interface HomePageProps {
   userId: string;
 }
+
+// Helper function to get difficulty sort order
+const getDifficultyOrder = (difficulty: string): number => {
+  switch (difficulty) {
+    case 'theory': return 1;
+    case 'easy': return 2;
+    case 'medium': return 3;
+    case 'hard': return 4;
+    default: return 5;
+  }
+};
 
 export const HomePage = ({ userId }: HomePageProps) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -89,7 +101,12 @@ export const HomePage = ({ userId }: HomePageProps) => {
             })
           );
           
-          setLearningPaths(pathsWithCount);
+          // Sort paths by difficulty
+          const sortedPaths = pathsWithCount.sort((a, b) => {
+            return getDifficultyOrder(a.difficulty) - getDifficultyOrder(b.difficulty);
+          });
+          
+          setLearningPaths(sortedPaths);
         }
       } catch (error: any) {
         toast({
@@ -129,7 +146,8 @@ export const HomePage = ({ userId }: HomePageProps) => {
             const { data: questions, error: questionsError } = await supabase
               .from('questions')
               .select('*')
-              .eq('topic_id', topic.id);
+              .eq('topic_id', topic.id)
+              .order('id', { ascending: true }); // Sort questions by ID
             
             if (questionsError) {
               throw questionsError;

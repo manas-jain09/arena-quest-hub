@@ -239,6 +239,7 @@ export type Database = {
           description: string
           difficulty: string
           id: string
+          sr: number | null
           title: string
           updated_at: string
         }
@@ -247,6 +248,7 @@ export type Database = {
           description: string
           difficulty: string
           id: string
+          sr?: number | null
           title: string
           updated_at?: string
         }
@@ -255,6 +257,7 @@ export type Database = {
           description?: string
           difficulty?: string
           id?: string
+          sr?: number | null
           title?: string
           updated_at?: string
         }
