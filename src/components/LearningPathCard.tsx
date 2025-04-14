@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 interface LearningPathCardProps {
   title: string;
   description: string;
-  difficulty: "easy" | "medium" | "hard";
+  difficulty: 'easy' | 'medium' | 'hard' | 'theory';
   topicsCount: number;
   questionsCount: number;
   onClick: () => void;
