@@ -1,26 +1,31 @@
+
 import { useState, useEffect } from 'react';
 import { LearningPathCard } from '@/components/LearningPathCard';
 import { QuestionTable } from '@/components/QuestionTable';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface LearningPath {
   id: string;
   title: string;
   description: string;
   difficulty: 'easy' | 'medium' | 'hard' | 'theory';
-  questions_count: number;
+  topicsCount?: number;
+  questionsCount?: number;
+}
+
+interface Topic {
+  id: string;
+  name: string;
+  learning_path_id: string;
+  questions: Question[];
 }
 
 interface Question {
   id: string;
   title: string;
-  difficulty: 'easy' | 'medium' | 'hard' | 'theory';
-  practice_link: string;
   solution_link: string;
-}
-
-interface UserProgress {
-  question_id: string;
+  difficulty: 'easy' | 'medium' | 'hard' | 'theory';
   is_completed: boolean;
   is_marked_for_revision: boolean;
 }
@@ -29,274 +34,217 @@ interface HomePageProps {
   userId: string;
 }
 
-// Define a sorting order for difficulties
-const difficultyOrder = {
-  'easy': 1,
-  'medium': 2,
-  'hard': 3,
-  'theory': 4
+// Helper function to get difficulty sort order
+const getDifficultyOrder = (difficulty: string): number => {
+  switch (difficulty) {
+    case 'theory': return 1;
+    case 'easy': return 2;
+    case 'medium': return 3;
+    case 'hard': return 4;
+    default: return 5;
+  }
 };
 
 export const HomePage = ({ userId }: HomePageProps) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedPathId, setSelectedPathId] = useState<string | null>(null);
   const [learningPaths, setLearningPaths] = useState<LearningPath[]>([]);
-  const [selectedPath, setSelectedPath] = useState<LearningPath | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [userProgress, setUserProgress] = useState<Record<string, UserProgress>>({});
-  const [loading, setLoading] = useState(true);
-
-  // Fetch learning paths
+  const [topicsWithQuestions, setTopicsWithQuestions] = useState<Topic[]>([]);
+  const { toast } = useToast();
+  
   useEffect(() => {
     const fetchLearningPaths = async () => {
       try {
         const { data, error } = await supabase
           .from('learning_paths')
-          .select('*');
+          .select('*')
+          .order('sr', { ascending: true });
         
         if (error) {
           throw error;
         }
         
         if (data) {
-          // Sort learning paths by difficulty level
-          const sortedPaths = [...data].sort((a, b) => {
-            return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
+          const pathsWithCount = await Promise.all(
+            data.map(async (path) => {
+              const { count: topicsCount, error: topicsError } = await supabase
+                .from('topics')
+                .select('*', { count: 'exact', head: true })
+                .eq('learning_path_id', path.id);
+              
+              const { data: topics, error: questionsError } = await supabase
+                .from('topics')
+                .select('id')
+                .eq('learning_path_id', path.id);
+              
+              if (topicsError || questionsError) {
+                console.error('Error fetching counts', topicsError || questionsError);
+                return {
+                  ...path,
+                  topicsCount: 0,
+                  questionsCount: 0
+                };
+              }
+              
+              const topicIds = topics?.map(t => t.id) || [];
+              
+              const { count: questionsCount } = await supabase
+                .from('questions')
+                .select('*', { count: 'exact', head: true })
+                .in('topic_id', topicIds);
+              
+              return {
+                ...path,
+                topicsCount: topicsCount || 0,
+                questionsCount: questionsCount || 0
+              };
+            })
+          );
+          
+          // Sort paths by difficulty
+          const sortedPaths = pathsWithCount.sort((a, b) => {
+            return getDifficultyOrder(a.difficulty) - getDifficultyOrder(b.difficulty);
           });
           
           setLearningPaths(sortedPaths);
         }
-      } catch (error) {
-        console.error('Error fetching learning paths:', error);
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: `Failed to load learning paths: ${error.message}`,
+          variant: "destructive",
+        });
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
     
     fetchLearningPaths();
-  }, []);
+  }, [toast]);
   
-  // Fetch questions for selected learning path
   useEffect(() => {
-    const fetchQuestions = async () => {
-      if (selectedPath) {
-        setLoading(true);
-        try {
-          const { data, error } = await supabase
-            .from('questions')
-            .select('*')
-            .eq('learning_path_id', selectedPath.id);
-          
-          if (error) {
-            throw error;
-          }
-          
-          if (data) {
-            // Sort questions by ID
-            const sortedQuestions = [...data].sort((a, b) => {
-              return a.id.localeCompare(b.id);
-            });
-            
-            setQuestions(sortedQuestions);
-          }
-        } catch (error) {
-          console.error('Error fetching questions:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
+    if (!selectedPathId) return;
     
-    fetchQuestions();
-  }, [selectedPath]);
-  
-  // Fetch user progress
-  useEffect(() => {
-    const fetchUserProgress = async () => {
+    const fetchTopicsAndQuestions = async () => {
+      setIsLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('user_progress')
+        const { data: topics, error: topicsError } = await supabase
+          .from('topics')
           .select('*')
-          .eq('user_id', userId);
+          .eq('learning_path_id', selectedPathId);
         
-        if (error) {
-          throw error;
+        if (topicsError) {
+          throw topicsError;
         }
         
-        if (data) {
-          const progressMap: Record<string, UserProgress> = {};
-          data.forEach(item => {
-            progressMap[item.question_id] = {
-              question_id: item.question_id,
-              is_completed: item.is_completed,
-              is_marked_for_revision: item.is_marked_for_revision
+        if (!topics) {
+          throw new Error('No topics found');
+        }
+        
+        const topicsWithQuestions = await Promise.all(
+          topics.map(async (topic) => {
+            const { data: questions, error: questionsError } = await supabase
+              .from('questions')
+              .select('*')
+              .eq('topic_id', topic.id)
+              .order('id', { ascending: true }); // Sort questions by ID
+            
+            if (questionsError) {
+              throw questionsError;
+            }
+            
+            const { data: progress, error: progressError } = await supabase
+              .from('user_progress')
+              .select('*')
+              .eq('user_id', userId)
+              .in('question_id', questions?.map(q => q.id) || []);
+            
+            if (progressError) {
+              throw progressError;
+            }
+            
+            const questionsWithProgress = questions?.map(question => {
+              const userProgress = progress?.find(p => p.question_id === question.id);
+              return {
+                ...question,
+                is_completed: userProgress?.is_completed || false,
+                is_marked_for_revision: userProgress?.is_marked_for_revision || false
+              };
+            }) || [];
+            
+            return {
+              ...topic,
+              questions: questionsWithProgress
             };
-          });
-          setUserProgress(progressMap);
-        }
-      } catch (error) {
-        console.error('Error fetching user progress:', error);
+          })
+        );
+        
+        setTopicsWithQuestions(topicsWithQuestions);
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: `Failed to load topics and questions: ${error.message}`,
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
     
-    fetchUserProgress();
-  }, [userId]);
+    fetchTopicsAndQuestions();
+  }, [selectedPathId, userId, toast]);
   
-  const handlePathSelect = (path: LearningPath) => {
-    setSelectedPath(path);
+  const handlePathSelect = (pathId: string) => {
+    setSelectedPathId(pathId);
   };
   
-  const handleToggleCompleted = async (questionId: string) => {
-    const currentStatus = userProgress[questionId]?.is_completed || false;
-    const newStatus = !currentStatus;
-    
-    try {
-      const { error } = await supabase
-        .from('user_progress')
-        .upsert({
-          user_id: userId,
-          question_id: questionId,
-          is_completed: newStatus,
-          is_marked_for_revision: userProgress[questionId]?.is_marked_for_revision || false
-        });
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Update local state
-      setUserProgress(prev => ({
-        ...prev,
-        [questionId]: {
-          ...prev[questionId],
-          question_id: questionId,
-          is_completed: newStatus,
-          is_marked_for_revision: prev[questionId]?.is_marked_for_revision || false
-        }
-      }));
-    } catch (error) {
-      console.error('Error updating completion status:', error);
-    }
-  };
-  
-  const handleToggleRevision = async (questionId: string) => {
-    const currentStatus = userProgress[questionId]?.is_marked_for_revision || false;
-    const newStatus = !currentStatus;
-    
-    try {
-      const { error } = await supabase
-        .from('user_progress')
-        .upsert({
-          user_id: userId,
-          question_id: questionId,
-          is_completed: userProgress[questionId]?.is_completed || false,
-          is_marked_for_revision: newStatus
-        });
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Update local state
-      setUserProgress(prev => ({
-        ...prev,
-        [questionId]: {
-          ...prev[questionId],
-          question_id: questionId,
-          is_completed: prev[questionId]?.is_completed || false,
-          is_marked_for_revision: newStatus
-        }
-      }));
-    } catch (error) {
-      console.error('Error updating revision status:', error);
-    }
-  };
-  
-  const handleResetLearningPath = () => {
-    setSelectedPath(null);
-  };
-
-  // Show loading state
-  if (loading && learningPaths.length === 0) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <div className="animate-pulse">
-            <div className="h-6 bg-gray-200 rounded w-1/4 mx-auto mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto mb-6"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="h-40 bg-gray-200 rounded"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Prepare questions with user progress for the QuestionTable
-  const questionsWithProgress = questions.map(question => ({
-    ...question,
-    is_completed: userProgress[question.id]?.is_completed || false,
-    is_marked_for_revision: userProgress[question.id]?.is_marked_for_revision || false
-  }));
+  const selectedPath = learningPaths.find(path => path.id === selectedPathId);
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {selectedPath ? (
-        <div>
-          <button 
-            onClick={handleResetLearningPath}
-            className="mb-4 text-arena-red flex items-center"
-          >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-5 w-5 mr-1" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M10 19l-7-7m0 0l7-7m-7 7h18" 
-              />
-            </svg>
-            Back to Learning Paths
-          </button>
-          <h2 className="text-2xl font-bold mb-2">{selectedPath.title}</h2>
-          <p className="text-arena-darkGray mb-6">{selectedPath.description}</p>
-          
-          <QuestionTable
-            questions={questionsWithProgress}
-            userProgress={userProgress}
-            onToggleCompleted={handleToggleCompleted}
-            onToggleRevision={handleToggleRevision}
-          />
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-arena-red"></div>
         </div>
-      ) : (
-        <div>
-          <h1 className="text-3xl font-bold mb-3">Learning Paths</h1>
-          <p className="text-arena-darkGray mb-8">
-            Select a learning path to get started with your journey
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {learningPaths.map((path) => (
+      ) : !selectedPathId ? (
+        <>
+          <h1 className="text-3xl font-bold text-arena-darkGray mb-6">Learning Paths</h1>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {learningPaths.map(path => (
               <LearningPathCard
                 key={path.id}
                 title={path.title}
                 description={path.description}
                 difficulty={path.difficulty}
-                questionsCount={path.questions_count}
-                onClick={() => handlePathSelect(path)}
+                topicsCount={path.topicsCount || 0}
+                questionsCount={path.questionsCount || 0}
+                onClick={() => handlePathSelect(path.id)}
               />
             ))}
           </div>
-        </div>
+        </>
+      ) : (
+        <>
+          <div className="mb-6 flex items-center">
+            <button 
+              onClick={() => setSelectedPathId(null)}
+              className="mr-4 bg-arena-lightGray hover:bg-arena-gray text-arena-darkGray px-3 py-1.5 rounded-md text-sm flex items-center"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Learning Paths
+            </button>
+            <h1 className="text-2xl font-bold text-arena-darkGray">{selectedPath?.title}</h1>
+          </div>
+          
+          <QuestionTable 
+            topics={topicsWithQuestions} 
+            learningPathTitle={selectedPath?.title || ''}
+            userId={userId}
+          />
+        </>
       )}
     </div>
   );
 };
-
-export default HomePage;

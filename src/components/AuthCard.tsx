@@ -19,6 +19,9 @@ interface AuthCardProps {
 }
 
 export const AuthCard = ({ onSuccess }: AuthCardProps) => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [prn, setPrn] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -29,24 +32,59 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
     setIsLoading(true);
     
     try {
-      // Login logic
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('prn', prn)
-        .eq('password', password)
-        .single();
-      
-      if (error) {
-        throw new Error('Invalid PRN or password');
-      }
-      
-      if (data) {
+      if (isLogin) {
+        // Login logic
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('prn', prn)
+          .eq('password', password)
+          .single();
+        
+        if (error) {
+          throw new Error('Invalid PRN or password');
+        }
+        
+        if (data) {
+          toast({
+            title: "Success",
+            description: "You have successfully logged in!",
+          });
+          onSuccess(data);
+        }
+      } else {
+        // Register logic
+        if (!username || !email || !prn || !password) {
+          throw new Error('All fields are required');
+        }
+        
+        // Check if user already exists
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('*')
+          .or(`email.eq.${email},prn.eq.${prn},username.eq.${username}`)
+          .maybeSingle();
+        
+        if (existingUser) {
+          throw new Error('User with this email, PRN, or username already exists');
+        }
+        
+        // Register the new user
+        const { data, error } = await supabase
+          .from('users')
+          .insert([{ username, email, prn, password }])
+          .select()
+          .single();
+        
+        if (error) {
+          throw new Error('Error creating account. Please try again.');
+        }
+        
         toast({
           title: "Success",
-          description: "You have successfully logged in!",
+          description: "Account created successfully! You can now log in.",
         });
-        onSuccess(data);
+        setIsLogin(true);
       }
     } catch (error: any) {
       toast({
@@ -64,11 +102,36 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold text-arena-red">ArenaHQ</CardTitle>
         <CardDescription>
-          Sign in to your account
+          {isLogin ? "Sign in to your account" : "Create a new account"}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input 
+                  id="username" 
+                  placeholder="Enter your username" 
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="arena-input"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="Enter your email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="arena-input"
+                />
+              </div>
+            </>
+          )}
           <div className="space-y-2">
             <Label htmlFor="prn">PRN</Label>
             <Input 
@@ -91,9 +154,17 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
             />
           </div>
           <Button type="submit" className="w-full arena-btn" disabled={isLoading}>
-            {isLoading ? "Please wait..." : "Sign In"}
+            {isLoading ? "Please wait..." : isLogin ? "Sign In" : "Sign Up"}
           </Button>
         </form>
+        <div className="mt-4 text-center">
+          <button 
+            onClick={() => setIsLogin(!isLogin)} 
+            className="text-sm text-arena-red hover:underline"
+          >
+            {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+          </button>
+        </div>
       </CardContent>
     </Card>
   );

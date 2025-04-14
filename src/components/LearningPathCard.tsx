@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 interface LearningPathCardProps {
   title: string;
   description: string;
-  difficulty: "easy" | "medium" | "hard" | "theory";
-  topicsCount?: number;
+  difficulty: "easy" | "medium" | "hard";
+  topicsCount: number;
   questionsCount: number;
   onClick: () => void;
 }
@@ -22,23 +22,16 @@ export const LearningPathCard = ({
   const difficultyMap = {
     easy: { color: "arena-badge-easy", text: "Easy" },
     medium: { color: "arena-badge-medium", text: "Medium" },
-    hard: { color: "arena-badge-hard", text: "Hard" },
-    theory: { color: "arena-badge-theory", text: "Theory" }
-  };
-
-  const getBgColor = () => {
-    switch(difficulty) {
-      case "easy": return "bg-green-50 border-b";
-      case "medium": return "bg-yellow-50 border-b";
-      case "hard": return "bg-red-50 border-b";
-      case "theory": return "bg-purple-50 border-b";
-      default: return "bg-gray-50 border-b";
-    }
+    hard: { color: "arena-badge-hard", text: "Hard" }
   };
 
   return (
     <Card className="arena-card cursor-pointer" onClick={onClick}>
-      <CardHeader className={getBgColor()}>
+      <CardHeader className={difficulty === "easy" 
+        ? "bg-green-50 border-b" 
+        : difficulty === "medium" 
+          ? "bg-yellow-50 border-b" 
+          : "bg-red-50 border-b"}>
         <div className="flex justify-between items-start">
           <CardTitle className="text-xl">{title}</CardTitle>
           <Badge className={difficultyMap[difficulty].color}>
@@ -49,9 +42,7 @@ export const LearningPathCard = ({
       </CardHeader>
       <CardContent className="pt-4">
         <div className="flex justify-between text-sm text-arena-darkGray">
-          {topicsCount !== undefined && (
-            <div>Topics: <span className="font-medium">{topicsCount}</span></div>
-          )}
+          <div>Topics: <span className="font-medium">{topicsCount}</span></div>
           <div>Questions: <span className="font-medium">{questionsCount}</span></div>
         </div>
       </CardContent>
