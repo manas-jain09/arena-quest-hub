@@ -100,7 +100,7 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
   return (
     <Card className="w-full max-w-md mx-auto mt-10">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-arena-red">ArenaHQ</CardTitle>
+        <CardTitle className="text-2xl font-bold text-arena-red">AstraLearn</CardTitle>
         <CardDescription>
           {isLogin ? "Sign in to your account" : "Create a new account"}
         </CardDescription>
