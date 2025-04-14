@@ -45,7 +45,8 @@ export const HomePage = ({ userId }: HomePageProps) => {
       try {
         const { data, error } = await supabase
           .from('learning_paths')
-          .select('*');
+          .select('*')
+          .order('sr', { ascending: true });
         
         if (error) {
           throw error;
