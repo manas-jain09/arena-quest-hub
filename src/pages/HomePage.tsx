@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { LearningPathCard } from '@/components/LearningPathCard';
 import { QuestionTable } from '@/components/QuestionTable';
@@ -234,6 +233,13 @@ export const HomePage = ({ userId }: HomePageProps) => {
     );
   }
 
+  // Prepare questions with user progress for the QuestionTable
+  const questionsWithProgress = questions.map(question => ({
+    ...question,
+    is_completed: userProgress[question.id]?.is_completed || false,
+    is_marked_for_revision: userProgress[question.id]?.is_marked_for_revision || false
+  }));
+
   return (
     <div className="container mx-auto px-4 py-8">
       {selectedPath ? (
@@ -262,7 +268,7 @@ export const HomePage = ({ userId }: HomePageProps) => {
           <p className="text-arena-darkGray mb-6">{selectedPath.description}</p>
           
           <QuestionTable
-            questions={questions}
+            questions={questionsWithProgress}
             userProgress={userProgress}
             onToggleCompleted={handleToggleCompleted}
             onToggleRevision={handleToggleRevision}
