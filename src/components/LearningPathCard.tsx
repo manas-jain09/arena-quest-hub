@@ -22,16 +22,23 @@ export const LearningPathCard = ({
   const difficultyMap = {
     easy: { color: "arena-badge-easy", text: "Easy" },
     medium: { color: "arena-badge-medium", text: "Medium" },
-    hard: { color: "arena-badge-hard", text: "Hard" }
+    hard: { color: "arena-badge-hard", text: "Hard" },
+    theory: { color: "arena-badge-theory", text: "Theory" }
+  };
+
+  const getBgColor = () => {
+    switch(difficulty) {
+      case "easy": return "bg-green-50 border-b";
+      case "medium": return "bg-yellow-50 border-b";
+      case "hard": return "bg-red-50 border-b";
+      case "theory": return "bg-blue-50 border-b";
+      default: return "bg-gray-50 border-b";
+    }
   };
 
   return (
     <Card className="arena-card cursor-pointer" onClick={onClick}>
-      <CardHeader className={difficulty === "easy" 
-        ? "bg-green-50 border-b" 
-        : difficulty === "medium" 
-          ? "bg-yellow-50 border-b" 
-          : "bg-red-50 border-b"}>
+      <CardHeader className={getBgColor()}>
         <div className="flex justify-between items-start">
           <CardTitle className="text-xl">{title}</CardTitle>
           <Badge className={difficultyMap[difficulty].color}>

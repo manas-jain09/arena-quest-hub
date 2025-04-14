@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,6 +11,7 @@ export interface Question {
   id: string;
   title: string;
   solution_link: string;
+  practice_link: string;
   difficulty: 'easy' | 'medium' | 'hard' | 'theory';
   is_completed: boolean;
   is_marked_for_revision: boolean;
@@ -211,8 +211,8 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
     }
   };
 
-  const handlePracticeClick = async (questionId: string) => {
-    window.open(questionId, '_blank');
+  const handlePracticeClick = async (practiceLink: string) => {
+    window.open(practiceLink, '_blank');
   };
 
   const totalQuestions = topics.reduce((acc, topic) => acc + topic.questions.length, 0);
@@ -328,7 +328,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handlePracticeClick(question.id);
+                          handlePracticeClick(question.practice_link);
                         }}
                         className="text-arena-red hover:underline inline-flex items-center gap-1 p-0 h-auto"
                       >

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { LearningPathCard } from '@/components/LearningPathCard';
 import { QuestionTable } from '@/components/QuestionTable';
@@ -25,6 +24,7 @@ interface Question {
   id: string;
   title: string;
   solution_link: string;
+  practice_link: string;
   difficulty: 'easy' | 'medium' | 'hard' | 'theory';
   is_completed: boolean;
   is_marked_for_revision: boolean;
@@ -145,7 +145,7 @@ export const HomePage = ({ userId }: HomePageProps) => {
           topics.map(async (topic) => {
             const { data: questions, error: questionsError } = await supabase
               .from('questions')
-              .select('*')
+              .select('id, title, solution_link, practice_link, difficulty')
               .eq('topic_id', topic.id)
               .order('id', { ascending: true }); // Sort questions by ID
             

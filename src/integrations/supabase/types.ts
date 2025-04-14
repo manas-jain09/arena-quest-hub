@@ -373,6 +373,7 @@ export type Database = {
           created_at: string
           difficulty: string
           id: string
+          practice_link: string | null
           solution_link: string
           title: string
           topic_id: string
@@ -382,6 +383,7 @@ export type Database = {
           created_at?: string
           difficulty: string
           id: string
+          practice_link?: string | null
           solution_link: string
           title: string
           topic_id: string
@@ -391,6 +393,7 @@ export type Database = {
           created_at?: string
           difficulty?: string
           id?: string
+          practice_link?: string | null
           solution_link?: string
           title?: string
           topic_id?: string
