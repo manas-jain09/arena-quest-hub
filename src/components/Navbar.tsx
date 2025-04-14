@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, MessageSquare, LogOut, Menu, X, User } from 'lucide-react';
+import { Home, LogOut, Menu, X, User } from 'lucide-react';
 import { useState } from 'react';
 
 interface NavbarProps {
@@ -31,10 +31,6 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Home size={16} />
                 <span>Home</span>
               </Link>
-              <Link to="/forums" className="arena-nav-link flex items-center gap-1">
-                <MessageSquare size={16} />
-                <span>ArenaForums</span>
-              </Link>
               <a href={`https://yodha.arenahq-mitwpu.in/profile/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1">
                 <User size={16} />
                 <span>Yodha</span>
@@ -60,10 +56,6 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
               <Link to="/" className="arena-nav-link active flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
                 <Home size={16} />
                 <span>Home</span>
-              </Link>
-              <Link to="/forums" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
-                <MessageSquare size={16} />
-                <span>ArenaForums</span>
               </Link>
               <a href={`https://yodha.arenahq-mitwpu.in/profile/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
                 <User size={16} />
