@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -23,14 +22,32 @@ interface Topic {
   questions: Question[];
 }
 
-interface QuestionTableProps {
+export interface QuestionTableProps {
   topics: Topic[];
   learningPathTitle: string;
   userId: string;
 }
 
-export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId }: QuestionTableProps) => {
-  const [topics, setTopics] = useState<Topic[]>(initialTopics);
+interface AlternativeQuestionTableProps {
+  questions?: Question[];
+  userProgress?: Record<string, any>;
+  onToggleCompleted?: (questionId: string) => Promise<void>;
+  onToggleRevision?: (questionId: string) => Promise<void>;
+  topics?: Topic[];
+  learningPathTitle?: string;
+  userId?: string;
+}
+
+export const QuestionTable = ({ 
+  topics: initialTopics, 
+  learningPathTitle, 
+  userId,
+  questions,
+  userProgress,
+  onToggleCompleted,
+  onToggleRevision
+}: AlternativeQuestionTableProps) => {
+  const [topics, setTopics] = useState<Topic[]>(initialTopics || []);
   const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({});
   const [filterStatus, setFilterStatus] = useState<'all' | 'solved' | 'unsolved' | 'revision'>('all');
   const [showFilter, setShowFilter] = useState(false);
@@ -60,6 +77,11 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
   };
 
   const toggleCompleted = async (topicId: string, questionId: string) => {
+    if (onToggleCompleted) {
+      await onToggleCompleted(questionId);
+      return;
+    }
+
     try {
       const currentTopic = topics.find(t => t.id === topicId);
       const currentQuestion = currentTopic?.questions.find(q => q.id === questionId);
@@ -122,6 +144,11 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
   };
 
   const toggleRevision = async (topicId: string, questionId: string) => {
+    if (onToggleRevision) {
+      await onToggleRevision(questionId);
+      return;
+    }
+
     try {
       const currentTopic = topics.find(t => t.id === topicId);
       const currentQuestion = currentTopic?.questions.find(q => q.id === questionId);
@@ -183,6 +210,75 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
     }
   };
 
+  const renderLegacyTable = () => {
+    if (!questions) return null;
+    
+    return (
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-left border-b border-arena-gray">
+            <th className="arena-table-header">Mark Done</th>
+            <th className="arena-table-header">Title</th>
+            <th className="arena-table-header">Practice</th>
+            <th className="arena-table-header">Article</th>
+            <th className="arena-table-header">Difficulty</th>
+            <th className="arena-table-header">Mark for Revision</th>
+          </tr>
+        </thead>
+        <tbody>
+          {questions.map((question) => (
+            <tr key={question.id} className={`border-b border-arena-gray hover:bg-gray-50 ${userProgress?.[question.id]?.is_completed ? 'bg-green-50' : ''}`}>
+              <td className="px-4 py-3 text-center">
+                <Checkbox 
+                  checked={userProgress?.[question.id]?.is_completed || false} 
+                  onCheckedChange={() => onToggleCompleted && onToggleCompleted(question.id)}
+                />
+              </td>
+              <td className="px-4 py-3">{question.title}</td>
+              <td className="px-4 py-3">
+                <a 
+                  href={question.id} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-arena-red hover:underline inline-flex items-center gap-1"
+                >
+                  <Code size={14} />
+                  Practice
+                </a>
+              </td>
+              <td className="px-4 py-3">
+                <a 
+                  href={question.solution_link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-arena-red hover:underline inline-flex items-center gap-1"
+                >
+                  <BookText size={14} />
+                  Article
+                </a>
+              </td>
+              <td className="px-4 py-3">
+                <Badge className={getDifficultyClass(question.difficulty)}>
+                  {question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1)}
+                </Badge>
+              </td>
+              <td className="px-4 py-3 text-center">
+                <Button 
+                  variant={userProgress?.[question.id]?.is_marked_for_revision ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => onToggleRevision && onToggleRevision(question.id)}
+                  className="w-8 h-8 p-0"
+                >
+                  <Star size={14} className={userProgress?.[question.id]?.is_marked_for_revision ? "text-yellow-400 fill-yellow-400" : ""} />
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  };
+
   const filterQuestions = (questions: Question[]) => {
     switch (filterStatus) {
       case 'solved':
@@ -221,6 +317,19 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
   const completionPercentage = totalQuestions > 0 
     ? Math.round((completedQuestions / totalQuestions) * 100) 
     : 0;
+
+  if (questions && onToggleCompleted && onToggleRevision) {
+    return (
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="p-4 bg-arena-lightGray border-b border-arena-gray flex justify-between items-center">
+          <h2 className="text-xl font-semibold text-arena-darkGray">Questions</h2>
+        </div>
+        <div className="overflow-x-auto">
+          {renderLegacyTable()}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
