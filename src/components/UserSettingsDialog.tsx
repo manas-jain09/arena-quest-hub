@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { 
@@ -140,7 +141,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         
         <ScrollArea className="flex-grow overflow-y-auto pr-4">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pr-2">
+            <form id="user-settings-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pr-2">
               <FormField
                 control={form.control}
                 name="real_name"

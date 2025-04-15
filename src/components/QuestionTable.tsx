@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -6,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Check, ExternalLink, Star, Filter, X, BookText, Code } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
+import { Link } from 'react-router-dom';
 
 export interface Question {
   id: string;
@@ -337,15 +339,16 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                       </Button>
                     </td>
                     <td className="px-4 py-3">
-                      <a 
-                        href={question.solution_link} 
-                        target="_blank" 
+                      <Link 
+                        to={`/articles/${question.id}`}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-arena-red hover:underline inline-flex items-center gap-1"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <BookText size={14} />
                         Article
-                      </a>
+                      </Link>
                     </td>
                     <td className="px-4 py-3">
                       <Badge className={getDifficultyClass(question.difficulty)}>
@@ -374,4 +377,4 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
       </div>
     </div>
   );
-};
+}
