@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { 
@@ -19,6 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -133,140 +133,142 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Profile Settings</DialogTitle>
         </DialogHeader>
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="real_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="cgpa"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CGPA</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      placeholder="Your CGPA" 
-                      step="0.01" 
-                      min="0" 
-                      max="10" 
-                      {...field} 
-                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <ScrollArea className="flex-grow overflow-y-auto pr-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pr-2">
+              <FormField
+                control={form.control}
+                name="real_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="cgpa"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CGPA</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="Your CGPA" 
+                        step="0.01" 
+                        min="0" 
+                        max="10" 
+                        {...field} 
+                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="bio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bio</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Tell us about yourself" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="bio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bio</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Tell us about yourself" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="college_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>College Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your college" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="college_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>College Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your college" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Location</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your location" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your location" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="linkedin_url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>LinkedIn URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://linkedin.com/in/your-profile" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="linkedin_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>LinkedIn URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://linkedin.com/in/your-profile" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="github_url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>GitHub URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://github.com/your-username" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="github_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>GitHub URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://github.com/your-username" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="leetcode_url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>LeetCode URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://leetcode.com/your-username" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="leetcode_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>LeetCode URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://leetcode.com/your-username" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
+        </ScrollArea>
 
-            <DialogFooter>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Saving...' : 'Save changes'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+        <DialogFooter>
+          <Button type="submit" disabled={isLoading} form="user-settings-form">
+            {isLoading ? 'Saving...' : 'Save changes'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
