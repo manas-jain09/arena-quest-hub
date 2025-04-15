@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Check, ExternalLink, Star, Filter, X, BookText, Code } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
+import { generateToken } from '@/utils/jwt';
 
 export interface Question {
   id: string;
@@ -211,8 +212,24 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
     }
   };
 
-  const handlePracticeClick = async (practiceLink: string) => {
-    window.open(practiceLink, '_blank');
+  const handlePracticeClick = async (questionId: string, practiceLink: string) => {
+    try {
+      const token = generateToken({
+        userId,
+        questionId
+      });
+
+      const baseUrl = 'https://practicequestion.arenahq-mitwpu.in';
+      const url = `${baseUrl}?token=${token}`;
+      
+      window.open(url, '_blank');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Failed to generate practice link: ${error.message}`,
+        variant: "destructive",
+      });
+    }
   };
 
   const totalQuestions = topics.reduce((acc, topic) => acc + topic.questions.length, 0);
@@ -328,7 +345,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handlePracticeClick(question.practice_link);
+                          handlePracticeClick(question.id, question.practice_link);
                         }}
                         className="text-arena-red hover:underline inline-flex items-center gap-1 p-0 h-auto"
                       >
