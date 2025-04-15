@@ -1,8 +1,9 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, LogOut, Menu, X, User } from 'lucide-react';
+import { Home, LogOut, Menu, Settings, User, X } from 'lucide-react';
 import { useState } from 'react';
+import { UserSettingsDialog } from './UserSettingsDialog';
 
 interface NavbarProps {
   onLogout: () => void;
@@ -10,6 +11,7 @@ interface NavbarProps {
 
 export const Navbar = ({ onLogout }: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -35,6 +37,10 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <User size={16} />
                 <span>Yodha</span>
               </a>
+              <Button onClick={() => setSettingsOpen(true)} variant="ghost" className="arena-nav-link flex items-center gap-1">
+                <Settings size={16} />
+                <span>Settings</span>
+              </Button>
               <Button onClick={onLogout} variant="ghost" className="arena-nav-link flex items-center gap-1">
                 <LogOut size={16} />
                 <span>Logout</span>
@@ -61,6 +67,10 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <User size={16} />
                 <span>Yodha</span>
               </a>
+              <Button onClick={() => { setSettingsOpen(true); setMobileMenuOpen(false); }} variant="ghost" className="arena-nav-link flex items-center gap-1 py-3 justify-start">
+                <Settings size={16} />
+                <span>Settings</span>
+              </Button>
               <Button onClick={() => { onLogout(); setMobileMenuOpen(false); }} variant="ghost" className="arena-nav-link flex items-center gap-1 py-3 justify-start">
                 <LogOut size={16} />
                 <span>Logout</span>
@@ -69,6 +79,13 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
           </div>
         )}
       </div>
+      
+      {/* Settings Dialog */}
+      <UserSettingsDialog 
+        open={settingsOpen} 
+        onOpenChange={setSettingsOpen} 
+        userId={localStorage.getItem('userId') || ''}
+      />
     </nav>
   );
 };
