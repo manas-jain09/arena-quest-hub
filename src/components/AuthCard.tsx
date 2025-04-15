@@ -100,7 +100,7 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
   return (
     <Card className="w-full max-w-md mx-auto mt-10">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-arena-red">AstraCode</CardTitle>
+        <CardTitle className="text-2xl font-bold text-arena-red">Astra</CardTitle>
         <CardDescription>
           {isLogin ? "Sign in to your account" : "Create a new account"}
         </CardDescription>
@@ -158,12 +158,12 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
           </Button>
         </form>
         <div className="mt-4 text-center">
-          <button 
+{/*           <button 
             onClick={() => setIsLogin(!isLogin)} 
             className="text-sm text-arena-red hover:underline"
           >
             {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
-          </button>
+          </button> */}
         </div>
       </CardContent>
     </Card>
