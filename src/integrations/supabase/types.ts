@@ -39,78 +39,196 @@ export type Database = {
         }
         Relationships: []
       }
-      certificates: {
+      contest_questions: {
         Row: {
-          created_at: string
-          credential_url: string | null
-          expiry_date: string | null
+          contest_id: string | null
+          created_at: string | null
+          description: string | null
           id: string
-          issue_date: string
-          issuer: string
-          title: string
-          updated_at: string
-          user_id: string
+          title: string | null
         }
         Insert: {
-          created_at?: string
-          credential_url?: string | null
-          expiry_date?: string | null
-          id?: string
-          issue_date: string
-          issuer: string
-          title: string
-          updated_at?: string
-          user_id: string
+          contest_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id: string
+          title?: string | null
         }
         Update: {
-          created_at?: string
-          credential_url?: string | null
-          expiry_date?: string | null
+          contest_id?: string | null
+          created_at?: string | null
+          description?: string | null
           id?: string
-          issue_date?: string
-          issuer?: string
-          title?: string
-          updated_at?: string
-          user_id?: string
+          title?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "certificates_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "contest_questions_contest_id_fkey"
+            columns: ["contest_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "contests"
             referencedColumns: ["id"]
           },
         ]
       }
-      code_templates: {
+      contests: {
+        Row: {
+          contest_code: string | null
+          created_at: string | null
+          duration_mins: number | null
+          end_date: string | null
+          id: string
+          name: string | null
+          public_access: boolean | null
+          start_date: string | null
+          type: string | null
+        }
+        Insert: {
+          contest_code?: string | null
+          created_at?: string | null
+          duration_mins?: number | null
+          end_date?: string | null
+          id: string
+          name?: string | null
+          public_access?: boolean | null
+          start_date?: string | null
+          type?: string | null
+        }
+        Update: {
+          contest_code?: string | null
+          created_at?: string | null
+          duration_mins?: number | null
+          end_date?: string | null
+          id?: string
+          name?: string | null
+          public_access?: boolean | null
+          start_date?: string | null
+          type?: string | null
+        }
+        Relationships: []
+      }
+      examples: {
         Row: {
           created_at: string | null
-          id: number
-          language: string
-          problem_id: string
-          template_code: string
+          explanation: string | null
+          id: string
+          input: string | null
+          output: string | null
+          question_id: string | null
         }
         Insert: {
           created_at?: string | null
-          id?: number
-          language: string
-          problem_id: string
-          template_code: string
+          explanation?: string | null
+          id: string
+          input?: string | null
+          output?: string | null
+          question_id?: string | null
         }
         Update: {
           created_at?: string | null
-          id?: number
-          language?: string
-          problem_id?: string
-          template_code?: string
+          explanation?: string | null
+          id?: string
+          input?: string | null
+          output?: string | null
+          question_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "code_templates_problem_id_fkey"
-            columns: ["problem_id"]
+            foreignKeyName: "examples_question_id_fkey"
+            columns: ["question_id"]
             isOneToOne: false
-            referencedRelation: "problems"
+            referencedRelation: "contest_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_content: {
+        Row: {
+          content_html: string
+          created_at: string
+          forum_id: string
+          id: string
+          updated_at: string
+          youtube_video_url: string
+        }
+        Insert: {
+          content_html: string
+          created_at?: string
+          forum_id: string
+          id?: string
+          updated_at?: string
+          youtube_video_url: string
+        }
+        Update: {
+          content_html?: string
+          created_at?: string
+          forum_id?: string
+          id?: string
+          updated_at?: string
+          youtube_video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_content_forum_id_fkey"
+            columns: ["forum_id"]
+            isOneToOne: false
+            referencedRelation: "forums"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forums: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      language_templates: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string | null
+          question_id: string | null
+          template: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          name?: string | null
+          question_id?: string | null
+          template?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string | null
+          question_id?: string | null
+          template?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "language_templates_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "contest_questions"
             referencedColumns: ["id"]
           },
         ]
@@ -145,108 +263,98 @@ export type Database = {
         }
         Relationships: []
       }
-      problem_examples: {
+      practice_contest_results: {
         Row: {
-          created_at: string | null
-          explanation: string | null
-          id: number
-          input: Json
-          output: Json
-          problem_id: string
+          contest_id: string
+          created_at: string
+          id: string
+          is_completed: boolean
+          prn: string
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
-          explanation?: string | null
-          id?: number
-          input: Json
-          output: Json
-          problem_id: string
+          contest_id: string
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          prn: string
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
-          explanation?: string | null
-          id?: number
-          input?: Json
-          output?: Json
-          problem_id?: string
+          contest_id?: string
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          prn?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "problem_examples_problem_id_fkey"
-            columns: ["problem_id"]
+            foreignKeyName: "fk_contest"
+            columns: ["contest_id"]
             isOneToOne: false
-            referencedRelation: "problems"
+            referencedRelation: "contests"
             referencedColumns: ["id"]
           },
         ]
       }
-      problems: {
+      practice_progress: {
         Row: {
-          constraints: Json | null
+          contest_id: string | null
           created_at: string | null
-          description: string
-          difficulty: string
           id: string
-          title: string
-          updated_at: string | null
+          language_id: string | null
+          last_updated: string | null
+          prn: string | null
+          user_code: string | null
         }
         Insert: {
-          constraints?: Json | null
+          contest_id?: string | null
           created_at?: string | null
-          description: string
-          difficulty: string
           id: string
-          title: string
-          updated_at?: string | null
+          language_id?: string | null
+          last_updated?: string | null
+          prn?: string | null
+          user_code?: string | null
         }
         Update: {
-          constraints?: Json | null
+          contest_id?: string | null
           created_at?: string | null
-          description?: string
-          difficulty?: string
           id?: string
-          title?: string
-          updated_at?: string | null
+          language_id?: string | null
+          last_updated?: string | null
+          prn?: string | null
+          user_code?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "practice_progress_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
-          bio: string | null
           cgpa: number | null
-          college_name: string | null
           created_at: string
-          github_url: string | null
           id: string
-          linkedin_url: string | null
-          location: string | null
-          profile_picture_url: string | null
           real_name: string
           updated_at: string
         }
         Insert: {
-          bio?: string | null
           cgpa?: number | null
-          college_name?: string | null
           created_at?: string
-          github_url?: string | null
           id: string
-          linkedin_url?: string | null
-          location?: string | null
-          profile_picture_url?: string | null
           real_name: string
           updated_at?: string
         }
         Update: {
-          bio?: string | null
           cgpa?: number | null
-          college_name?: string | null
           created_at?: string
-          github_url?: string | null
           id?: string
-          linkedin_url?: string | null
-          location?: string | null
-          profile_picture_url?: string | null
           real_name?: string
           updated_at?: string
         }
@@ -256,56 +364,6 @@ export type Database = {
             columns: ["id"]
             isOneToOne: true
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      projects: {
-        Row: {
-          created_at: string
-          description: string
-          end_date: string | null
-          id: string
-          image_url: string | null
-          project_url: string | null
-          start_date: string
-          technologies: string[] | null
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          description: string
-          end_date?: string | null
-          id?: string
-          image_url?: string | null
-          project_url?: string | null
-          start_date: string
-          technologies?: string[] | null
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          description?: string
-          end_date?: string | null
-          id?: string
-          image_url?: string | null
-          project_url?: string | null
-          start_date?: string
-          technologies?: string[] | null
-          title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "projects_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -388,7 +446,15 @@ export type Database = {
           score?: number | null
           year?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "results_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       submissions: {
         Row: {
@@ -420,6 +486,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "submissions_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "contest_questions"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "submissions_result_id_fkey"
             columns: ["result_id"]
             isOneToOne: false
@@ -431,34 +504,37 @@ export type Database = {
       test_cases: {
         Row: {
           created_at: string | null
-          expected_output: Json
-          id: number
-          input: Json
-          is_hidden: boolean | null
-          problem_id: string
+          expected: string | null
+          id: string
+          input: string | null
+          points: number | null
+          question_id: string | null
+          visible: boolean | null
         }
         Insert: {
           created_at?: string | null
-          expected_output: Json
-          id?: number
-          input: Json
-          is_hidden?: boolean | null
-          problem_id: string
+          expected?: string | null
+          id: string
+          input?: string | null
+          points?: number | null
+          question_id?: string | null
+          visible?: boolean | null
         }
         Update: {
           created_at?: string | null
-          expected_output?: Json
-          id?: number
-          input?: Json
-          is_hidden?: boolean | null
-          problem_id?: string
+          expected?: string | null
+          id?: string
+          input?: string | null
+          points?: number | null
+          question_id?: string | null
+          visible?: boolean | null
         }
         Relationships: [
           {
-            foreignKeyName: "test_cases_problem_id_fkey"
-            columns: ["problem_id"]
+            foreignKeyName: "test_cases_question_id_fkey"
+            columns: ["question_id"]
             isOneToOne: false
-            referencedRelation: "problems"
+            referencedRelation: "contest_questions"
             referencedColumns: ["id"]
           },
         ]
@@ -672,56 +748,6 @@ export type Database = {
           username?: string
         }
         Relationships: []
-      }
-      work_experience: {
-        Row: {
-          company: string
-          created_at: string
-          description: string
-          end_date: string | null
-          id: string
-          location: string | null
-          position: string
-          start_date: string
-          technologies: string[] | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          company: string
-          created_at?: string
-          description: string
-          end_date?: string | null
-          id?: string
-          location?: string | null
-          position: string
-          start_date: string
-          technologies?: string[] | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          company?: string
-          created_at?: string
-          description?: string
-          end_date?: string | null
-          id?: string
-          location?: string | null
-          position?: string
-          start_date?: string
-          technologies?: string[] | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "work_experience_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Views: {

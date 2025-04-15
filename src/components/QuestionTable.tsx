@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -7,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Check, ExternalLink, Star, Filter, X, BookText, Code } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
-import { generateToken } from '@/utils/jwt';
 
 export interface Question {
   id: string;
@@ -213,39 +211,8 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
     }
   };
 
-  const handlePracticeClick = async (questionId: string, practiceLink: string) => {
-    try {
-      // Generate the JWT token
-      const token = generateToken({
-        userId,
-        questionId
-      });
-
-      // Build the URL with the token
-      const baseUrl = 'https://practicequestion.arenahq-mitwpu.in';
-      const url = `${baseUrl}?token=${encodeURIComponent(token)}`;
-      
-      // Open in a new tab with additional security measures
-      const newWindow = window.open();
-      if (newWindow) {
-        newWindow.opener = null; // Prevent the new page from having access to the opener
-        newWindow.location.href = url;
-      } else {
-        // If popup is blocked, show a toast notification
-        toast({
-          title: "Popup Blocked",
-          description: "Please allow popups for this site to open practice questions.",
-          variant: "destructive",
-        });
-      }
-    } catch (error: any) {
-      console.error("Token generation error:", error);
-      toast({
-        title: "Error",
-        description: `Failed to generate practice link: ${error.message}`,
-        variant: "destructive",
-      });
-    }
+  const handlePracticeClick = async (practiceLink: string) => {
+    window.open(practiceLink, '_blank');
   };
 
   const totalQuestions = topics.reduce((acc, topic) => acc + topic.questions.length, 0);
@@ -361,7 +328,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handlePracticeClick(question.id, question.practice_link);
+                          handlePracticeClick(question.practice_link);
                         }}
                         className="text-arena-red hover:underline inline-flex items-center gap-1 p-0 h-auto"
                       >
