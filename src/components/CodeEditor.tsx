@@ -1,5 +1,6 @@
 
-import React, { useEffect, useRef } from 'react';
+import { Editor } from '@monaco-editor/react';
+import React from 'react';
 
 interface CodeEditorProps {
   code: string;
@@ -8,9 +9,7 @@ interface CodeEditorProps {
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, language }) => {
-  const editorRef = useRef<HTMLTextAreaElement>(null);
-  
-  // Map language to syntax highlighting (would be handled by the editor library)
+  // Map language to monaco language IDs
   const getLanguageMode = () => {
     switch (language) {
       case 'c': return 'c';
@@ -21,38 +20,32 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, language
     }
   };
 
-  // Tab handling for textarea (basic indentation support)
-  useEffect(() => {
-    const handleTab = (e: KeyboardEvent) => {
-      if (e.key === 'Tab' && editorRef.current === document.activeElement) {
-        e.preventDefault();
-        const start = editorRef.current.selectionStart;
-        const end = editorRef.current.selectionEnd;
-        
-        // Set textarea value to: text before caret + tab + text after caret
-        editorRef.current.value = editorRef.current.value.substring(0, start) + '    ' + editorRef.current.value.substring(end);
-        
-        // Put caret at right position again
-        editorRef.current.selectionStart = editorRef.current.selectionEnd = start + 4;
-        
-        // Trigger onChange
-        onChange(editorRef.current.value);
-      }
-    };
-    
-    window.addEventListener('keydown', handleTab);
-    return () => window.removeEventListener('keydown', handleTab);
-  }, [onChange]);
-
   return (
-    <div className="h-full w-full relative bg-[#1A1F2C]">
-      <textarea
-        ref={editorRef}
+    <div className="h-full w-full">
+      <Editor
+        height="100%"
+        defaultLanguage={getLanguageMode()}
         value={code}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-full w-full resize-none bg-[#1A1F2C] text-[#E4E4E4] font-mono p-4 focus:outline-none text-sm leading-6"
-        spellCheck="false"
-        data-language={getLanguageMode()}
+        onChange={(value) => onChange(value || '')}
+        theme="light"
+        options={{
+          fontFamily: 'JetBrains Mono, Consolas, Monaco, monospace',
+          fontSize: 14,
+          lineHeight: 21,
+          minimap: { enabled: false },
+          scrollBeyondLastLine: false,
+          renderLineHighlight: 'all',
+          cursorBlinking: 'smooth',
+          automaticLayout: true,
+          padding: { top: 10 },
+          scrollbar: {
+            vertical: 'visible',
+            horizontal: 'visible',
+            useShadows: false,
+            verticalScrollbarSize: 10,
+            horizontalScrollbarSize: 10
+          }
+        }}
       />
     </div>
   );

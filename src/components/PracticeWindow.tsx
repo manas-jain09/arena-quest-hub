@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -8,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '@/components/ui/separator';
 import { PlayCircle, CheckCircle, AlertCircle } from 'lucide-react';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { CodeEditor } from './CodeEditor';
@@ -60,11 +58,9 @@ export const PracticeWindow = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const { toast } = useToast();
 
-  // Fetch problem details
   const { data: problem, isLoading: isLoadingProblem } = useQuery({
     queryKey: ['problem', questionId],
     queryFn: async () => {
-      // Fetch problem details from the database
       const { data, error } = await supabase
         .from('questions')
         .select('id, title, difficulty')
@@ -76,11 +72,9 @@ export const PracticeWindow = () => {
     }
   });
 
-  // Fetch examples
   const { data: examples = [], isLoading: isLoadingExamples } = useQuery({
     queryKey: ['examples', questionId],
     queryFn: async () => {
-      // Fetch examples from the database
       const { data, error } = await supabase
         .from('examples')
         .select('*')
@@ -92,11 +86,9 @@ export const PracticeWindow = () => {
     enabled: !!questionId
   });
 
-  // Fetch constraints
   const { data: constraints = [], isLoading: isLoadingConstraints } = useQuery({
     queryKey: ['constraints', questionId],
     queryFn: async () => {
-      // Fetch constraints from the database
       const { data, error } = await supabase
         .from('constraints')
         .select('*')
@@ -108,11 +100,9 @@ export const PracticeWindow = () => {
     enabled: !!questionId
   });
 
-  // Fetch test cases
   const { data: testCases = [], isLoading: isLoadingTestCases } = useQuery({
     queryKey: ['testCases', questionId],
     queryFn: async () => {
-      // Fetch test cases from the database
       const { data, error } = await supabase
         .from('test_cases')
         .select('*')
@@ -124,11 +114,9 @@ export const PracticeWindow = () => {
     enabled: !!questionId
   });
 
-  // Fetch language templates
   const { data: languageTemplates = [], isLoading: isLoadingTemplates } = useQuery({
     queryKey: ['languageTemplates', questionId],
     queryFn: async () => {
-      // Fetch language templates from the database
       const { data, error } = await supabase
         .from('language_templates')
         .select('*')
@@ -140,14 +128,12 @@ export const PracticeWindow = () => {
     enabled: !!questionId
   });
 
-  // Set initial template when languages are loaded or language changes
   useEffect(() => {
     if (languageTemplates.length > 0) {
       const template = languageTemplates.find(t => t.name.toLowerCase() === language);
       if (template) {
         setCode(template.template);
       } else {
-        // Fallback to default template for the language
         setDefaultTemplate();
       }
     } else {
@@ -214,21 +200,17 @@ public class Solution {
     setResults([]);
 
     try {
-      // Get only visible test cases
       const visibleTests = testCases.filter(tc => tc.visible);
       
-      // Mock execution for now
-      // In a real implementation, you would send the code to a backend for execution
       const mockResults = visibleTests.map(test => ({
         id: test.id,
         input: test.input,
         expected: test.expected,
-        actual: test.expected, // Mocking correct output
+        actual: test.expected,
         status: "passed",
         points: test.points
       }));
       
-      // Simulate processing time
       setTimeout(() => {
         setResults(mockResults);
         setIsRunning(false);
@@ -261,18 +243,15 @@ public class Solution {
     setResults([]);
 
     try {
-      // In a real implementation, you would send the code to a backend for execution against all test cases
-      // Mock submission result for now
       const mockResults = testCases.map(test => ({
         id: test.id,
         input: test.visible ? test.input : "Hidden",
         expected: test.visible ? test.expected : "Hidden",
-        actual: test.expected, // Mocking correct output
-        status: Math.random() > 0.2 ? "passed" : "failed", // Some random failures for demo
+        actual: test.expected,
+        status: Math.random() > 0.2 ? "passed" : "failed",
         points: test.points
       }));
       
-      // Simulate processing time
       setTimeout(() => {
         setResults(mockResults);
         setIsSubmitting(false);
@@ -287,8 +266,6 @@ public class Solution {
           description: `Passed ${passedTests}/${totalTests} test cases. Score: ${totalPoints}/${maxPoints} points.`,
           variant: passedTests === totalTests ? "default" : "destructive"
         });
-        
-        // In a real implementation, you would save the submission to the database
       }, 2000);
     } catch (error) {
       setIsSubmitting(false);
@@ -324,12 +301,11 @@ public class Solution {
   }
 
   return (
-    <div className="h-screen bg-[#1A1F2C] text-white">
-      {/* Header */}
-      <header className="bg-[#252B3B] border-b border-[#2D3548] p-4">
-        <div className="flex items-center justify-between">
+    <div className="h-screen bg-white text-gray-900">
+      <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
+        <div className="flex items-center justify-between max-w-[1600px] mx-auto">
           <div>
-            <h1 className="text-xl font-bold text-white">{problem?.title}</h1>
+            <h1 className="text-xl font-bold text-gray-900">{problem?.title}</h1>
             <div className="flex gap-2 mt-1">
               <Badge 
                 className={`${getDifficultyClass(problem?.difficulty)} text-xs font-medium px-2 py-0.5`}
@@ -338,12 +314,12 @@ public class Solution {
               </Badge>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <Button 
               onClick={handleRun} 
               disabled={isRunning}
-              variant="secondary"
-              className="bg-[#2D3548] hover:bg-[#3A445D] text-white border-none gap-2"
+              variant="outline"
+              className="gap-2 bg-white hover:bg-gray-50 text-gray-700"
             >
               <PlayCircle size={18} />
               {isRunning ? "Running..." : "Run Code"}
@@ -351,7 +327,7 @@ public class Solution {
             <Button 
               onClick={handleSubmit} 
               disabled={isSubmitting}
-              className="bg-[#4F46E5] hover:bg-[#4338CA] text-white border-none gap-2"
+              className="bg-green-600 hover:bg-green-700 text-white gap-2"
             >
               <CheckCircle size={18} />
               {isSubmitting ? "Submitting..." : "Submit"}
@@ -360,37 +336,35 @@ public class Solution {
         </div>
       </header>
 
-      {/* Main content */}
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
-        {/* Problem description panel */}
-        <ResizablePanel defaultSize={40} minSize={30} className="bg-[#252B3B]">
+      <ResizablePanelGroup direction="horizontal" className="flex-1 bg-gray-50">
+        <ResizablePanel defaultSize={40} minSize={30} className="bg-white">
           <div className="h-full overflow-auto">
-            <Tabs defaultValue="description" className="p-4">
-              <TabsList className="w-full bg-[#2D3548] text-white">
+            <Tabs defaultValue="description" className="p-6">
+              <TabsList className="w-full bg-gray-100">
                 <TabsTrigger 
                   value="description" 
-                  className="flex-1 data-[state=active]:bg-[#4F46E5] data-[state=active]:text-white"
+                  className="flex-1 data-[state=active]:bg-white"
                 >
                   Description
                 </TabsTrigger>
                 <TabsTrigger 
                   value="examples" 
-                  className="flex-1 data-[state=active]:bg-[#4F46E5] data-[state=active]:text-white"
+                  className="flex-1 data-[state=active]:bg-white"
                 >
                   Examples
                 </TabsTrigger>
                 <TabsTrigger 
                   value="constraints" 
-                  className="flex-1 data-[state=active]:bg-[#4F46E5] data-[state=active]:text-white"
+                  className="flex-1 data-[state=active]:bg-white"
                 >
                   Constraints
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="description" className="mt-4 text-gray-300">
-                <div className="prose prose-invert max-w-none">
-                  <h2 className="text-lg font-semibold mb-2 text-white">Problem Description</h2>
-                  <p>
+              <TabsContent value="description" className="mt-6">
+                <div className="prose max-w-none">
+                  <h2 className="text-lg font-semibold mb-4">Problem Description</h2>
+                  <p className="text-gray-700">
                     {isLoadingProblem 
                       ? "Loading problem description..." 
                       : problem?.description || "Write a function to solve this problem based on the given examples and constraints."}
@@ -398,94 +372,91 @@ public class Solution {
                 </div>
               </TabsContent>
               
-              <TabsContent value="examples" className="mt-4">
+              <TabsContent value="examples" className="mt-6">
                 {isLoadingExamples ? (
-                  <p className="text-gray-400">Loading examples...</p>
+                  <p className="text-gray-600">Loading examples...</p>
                 ) : examples.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {examples.map((example, index) => (
-                      <div key={example.id} className="border border-[#2D3548] rounded-md p-4 bg-[#1A1F2C]">
-                        <h3 className="font-medium text-white mb-2">Example {index + 1}</h3>
+                      <div key={example.id} className="rounded-lg border border-gray-200 bg-white p-4">
+                        <h3 className="font-medium text-gray-900 mb-3">Example {index + 1}</h3>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="font-semibold text-sm text-gray-400">Input:</p>
-                            <pre className="bg-[#252B3B] p-2 rounded mt-1 text-sm text-gray-300 font-mono">{example.input}</pre>
+                            <p className="text-sm font-medium text-gray-700">Input:</p>
+                            <pre className="mt-2 p-3 bg-gray-50 rounded-md text-sm font-mono text-gray-800">{example.input}</pre>
                           </div>
                           <div>
-                            <p className="font-semibold text-sm text-gray-400">Output:</p>
-                            <pre className="bg-[#252B3B] p-2 rounded mt-1 text-sm text-gray-300 font-mono">{example.output}</pre>
+                            <p className="text-sm font-medium text-gray-700">Output:</p>
+                            <pre className="mt-2 p-3 bg-gray-50 rounded-md text-sm font-mono text-gray-800">{example.output}</pre>
                           </div>
                         </div>
                         {example.explanation && (
-                          <div className="mt-2">
-                            <p className="font-semibold text-sm text-gray-400">Explanation:</p>
-                            <p className="text-sm mt-1 text-gray-300">{example.explanation}</p>
+                          <div className="mt-3">
+                            <p className="text-sm font-medium text-gray-700">Explanation:</p>
+                            <p className="mt-2 text-sm text-gray-600">{example.explanation}</p>
                           </div>
                         )}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-400">No examples available for this problem.</p>
+                  <p className="text-gray-600">No examples available for this problem.</p>
                 )}
               </TabsContent>
               
-              <TabsContent value="constraints" className="mt-4">
+              <TabsContent value="constraints" className="mt-6">
                 {isLoadingConstraints ? (
-                  <p className="text-gray-400">Loading constraints...</p>
+                  <p className="text-gray-600">Loading constraints...</p>
                 ) : constraints.length > 0 ? (
-                  <div className="space-y-2">
-                    <h3 className="font-medium text-white">Constraints:</h3>
-                    <ul className="list-disc pl-5 space-y-1 text-gray-300">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Constraints:</h3>
+                    <ul className="list-disc pl-5 space-y-2 text-gray-700">
                       {constraints.map(constraint => (
                         <li key={constraint.id}>{constraint.description}</li>
                       ))}
                     </ul>
                   </div>
                 ) : (
-                  <p className="text-gray-400">No specific constraints for this problem.</p>
+                  <p className="text-gray-600">No specific constraints for this problem.</p>
                 )}
               </TabsContent>
             </Tabs>
           </div>
         </ResizablePanel>
         
-        <ResizableHandle className="bg-[#2D3548] w-1" />
+        <ResizableHandle className="bg-gray-200 w-1" />
         
-        {/* Code editor and test cases panel */}
         <ResizablePanel defaultSize={60}>
           <ResizablePanelGroup direction="vertical">
-            {/* Code editor section */}
-            <ResizablePanel defaultSize={70} className="bg-[#1A1F2C]">
+            <ResizablePanel defaultSize={70} className="bg-white">
               <div className="h-full flex flex-col">
-                <div className="flex items-center justify-between p-2 bg-[#252B3B] border-b border-[#2D3548]">
+                <div className="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
                   <Select value={language} onValueChange={setLanguage}>
-                    <SelectTrigger className="w-[180px] bg-[#2D3548] border-[#4F46E5] text-white">
+                    <SelectTrigger className="w-[180px] bg-white border-gray-200">
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#252B3B] border-[#2D3548]">
-                      <SelectItem value="c" className="text-white hover:bg-[#2D3548]">C</SelectItem>
-                      <SelectItem value="cpp" className="text-white hover:bg-[#2D3548]">C++</SelectItem>
-                      <SelectItem value="java" className="text-white hover:bg-[#2D3548]">Java</SelectItem>
-                      <SelectItem value="python" className="text-white hover:bg-[#2D3548]">Python</SelectItem>
+                    <SelectContent>
+                      <SelectItem value="c">C</SelectItem>
+                      <SelectItem value="cpp">C++</SelectItem>
+                      <SelectItem value="java">Java</SelectItem>
+                      <SelectItem value="python">Python</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 bg-white">
                   <CodeEditor code={code} onChange={setCode} language={language} />
                 </div>
               </div>
             </ResizablePanel>
             
-            <ResizableHandle className="bg-[#2D3548] h-1" />
+            <ResizableHandle className="bg-gray-200 h-1" />
             
-            {/* Test cases and output section */}
-            <ResizablePanel defaultSize={30} className="bg-[#252B3B]">
-              <div className="h-full overflow-auto p-4">
-                <h3 className="font-medium text-white mb-3">Test Results</h3>
+            <ResizablePanel defaultSize={30} className="bg-white">
+              <div className="h-full overflow-auto p-6">
+                <h3 className="text-lg font-semibold mb-4 text-gray-900">Test Results</h3>
                 
                 {results.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {results.map(result => (
                       <TestCaseResult 
                         key={result.id}
@@ -494,8 +465,8 @@ public class Solution {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-400">
-                    <AlertCircle className="mx-auto h-12 w-12 text-gray-500" />
+                  <div className="text-center py-12 text-gray-500">
+                    <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
                     <p className="mt-2">Run your code to see the results here</p>
                   </div>
                 )}
