@@ -318,6 +318,87 @@ export type Database = {
         }
         Relationships: []
       }
+      mcq_options: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_correct: boolean | null
+          option_text: string
+          question_id: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_correct?: boolean | null
+          option_text: string
+          question_id: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_correct?: boolean | null
+          option_text?: string
+          question_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcq_options_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "contest_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mcq_submissions: {
+        Row: {
+          id: string
+          prn: string | null
+          question_id: number
+          result_id: string | null
+          selected_option_id: string | null
+          submitted_at: string | null
+        }
+        Insert: {
+          id?: string
+          prn?: string | null
+          question_id: number
+          result_id?: string | null
+          selected_option_id?: string | null
+          submitted_at?: string | null
+        }
+        Update: {
+          id?: string
+          prn?: string | null
+          question_id?: number
+          result_id?: string | null
+          selected_option_id?: string | null
+          submitted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcq_submissions_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "contest_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mcq_submissions_result_id_fkey"
+            columns: ["result_id"]
+            isOneToOne: false
+            referencedRelation: "results"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mcq_submissions_selected_option_id_fkey"
+            columns: ["selected_option_id"]
+            isOneToOne: false
+            referencedRelation: "mcq_options"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practice_progress: {
         Row: {
           contest_id: string | null
