@@ -324,24 +324,35 @@ public class Solution {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="h-screen bg-[#1A1F2C] text-white">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 p-4">
+      <header className="bg-[#252B3B] border-b border-[#2D3548] p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold">{problem.title}</h1>
+            <h1 className="text-xl font-bold text-white">{problem?.title}</h1>
             <div className="flex gap-2 mt-1">
-              <Badge className={getDifficultyClass(problem.difficulty)}>
-                {problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1)}
+              <Badge 
+                className={`${getDifficultyClass(problem?.difficulty)} text-xs font-medium px-2 py-0.5`}
+              >
+                {problem?.difficulty?.charAt(0).toUpperCase() + problem?.difficulty?.slice(1)}
               </Badge>
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleRun} disabled={isRunning} className="gap-2">
+            <Button 
+              onClick={handleRun} 
+              disabled={isRunning}
+              variant="secondary"
+              className="bg-[#2D3548] hover:bg-[#3A445D] text-white border-none gap-2"
+            >
               <PlayCircle size={18} />
               {isRunning ? "Running..." : "Run Code"}
             </Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting} className="gap-2">
+            <Button 
+              onClick={handleSubmit} 
+              disabled={isSubmitting}
+              className="bg-[#4F46E5] hover:bg-[#4338CA] text-white border-none gap-2"
+            >
               <CheckCircle size={18} />
               {isSubmitting ? "Submitting..." : "Submit"}
             </Button>
@@ -352,96 +363,111 @@ public class Solution {
       {/* Main content */}
       <ResizablePanelGroup direction="horizontal" className="flex-1">
         {/* Problem description panel */}
-        <ResizablePanel defaultSize={40} minSize={30}>
-          <div className="h-full overflow-auto p-4">
-            <Tabs defaultValue="description">
-              <TabsList className="w-full">
-                <TabsTrigger value="description" className="flex-1">Description</TabsTrigger>
-                <TabsTrigger value="examples" className="flex-1">Examples</TabsTrigger>
-                <TabsTrigger value="constraints" className="flex-1">Constraints</TabsTrigger>
+        <ResizablePanel defaultSize={40} minSize={30} className="bg-[#252B3B]">
+          <div className="h-full overflow-auto">
+            <Tabs defaultValue="description" className="p-4">
+              <TabsList className="w-full bg-[#2D3548] text-white">
+                <TabsTrigger 
+                  value="description" 
+                  className="flex-1 data-[state=active]:bg-[#4F46E5] data-[state=active]:text-white"
+                >
+                  Description
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="examples" 
+                  className="flex-1 data-[state=active]:bg-[#4F46E5] data-[state=active]:text-white"
+                >
+                  Examples
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="constraints" 
+                  className="flex-1 data-[state=active]:bg-[#4F46E5] data-[state=active]:text-white"
+                >
+                  Constraints
+                </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="description" className="mt-4">
-                <div className="prose max-w-none">
-                  <h2 className="text-lg font-semibold mb-2">Problem Description</h2>
+              <TabsContent value="description" className="mt-4 text-gray-300">
+                <div className="prose prose-invert max-w-none">
+                  <h2 className="text-lg font-semibold mb-2 text-white">Problem Description</h2>
                   <p>
                     {isLoadingProblem 
                       ? "Loading problem description..." 
-                      : problem.description || "Write a function to solve this problem based on the given examples and constraints."}
+                      : problem?.description || "Write a function to solve this problem based on the given examples and constraints."}
                   </p>
                 </div>
               </TabsContent>
               
               <TabsContent value="examples" className="mt-4">
                 {isLoadingExamples ? (
-                  <p>Loading examples...</p>
+                  <p className="text-gray-400">Loading examples...</p>
                 ) : examples.length > 0 ? (
                   <div className="space-y-4">
                     {examples.map((example, index) => (
-                      <div key={example.id} className="border rounded-md p-4 bg-white">
-                        <h3 className="font-medium mb-2">Example {index + 1}</h3>
+                      <div key={example.id} className="border border-[#2D3548] rounded-md p-4 bg-[#1A1F2C]">
+                        <h3 className="font-medium text-white mb-2">Example {index + 1}</h3>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="font-semibold text-sm">Input:</p>
-                            <pre className="bg-gray-100 p-2 rounded mt-1 text-sm">{example.input}</pre>
+                            <p className="font-semibold text-sm text-gray-400">Input:</p>
+                            <pre className="bg-[#252B3B] p-2 rounded mt-1 text-sm text-gray-300 font-mono">{example.input}</pre>
                           </div>
                           <div>
-                            <p className="font-semibold text-sm">Output:</p>
-                            <pre className="bg-gray-100 p-2 rounded mt-1 text-sm">{example.output}</pre>
+                            <p className="font-semibold text-sm text-gray-400">Output:</p>
+                            <pre className="bg-[#252B3B] p-2 rounded mt-1 text-sm text-gray-300 font-mono">{example.output}</pre>
                           </div>
                         </div>
                         {example.explanation && (
                           <div className="mt-2">
-                            <p className="font-semibold text-sm">Explanation:</p>
-                            <p className="text-sm mt-1">{example.explanation}</p>
+                            <p className="font-semibold text-sm text-gray-400">Explanation:</p>
+                            <p className="text-sm mt-1 text-gray-300">{example.explanation}</p>
                           </div>
                         )}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p>No examples available for this problem.</p>
+                  <p className="text-gray-400">No examples available for this problem.</p>
                 )}
               </TabsContent>
               
               <TabsContent value="constraints" className="mt-4">
                 {isLoadingConstraints ? (
-                  <p>Loading constraints...</p>
+                  <p className="text-gray-400">Loading constraints...</p>
                 ) : constraints.length > 0 ? (
                   <div className="space-y-2">
-                    <h3 className="font-medium">Constraints:</h3>
-                    <ul className="list-disc pl-5 space-y-1">
+                    <h3 className="font-medium text-white">Constraints:</h3>
+                    <ul className="list-disc pl-5 space-y-1 text-gray-300">
                       {constraints.map(constraint => (
                         <li key={constraint.id}>{constraint.description}</li>
                       ))}
                     </ul>
                   </div>
                 ) : (
-                  <p>No specific constraints for this problem.</p>
+                  <p className="text-gray-400">No specific constraints for this problem.</p>
                 )}
               </TabsContent>
             </Tabs>
           </div>
         </ResizablePanel>
         
-        <ResizableHandle />
+        <ResizableHandle className="bg-[#2D3548] w-1" />
         
         {/* Code editor and test cases panel */}
         <ResizablePanel defaultSize={60}>
           <ResizablePanelGroup direction="vertical">
             {/* Code editor section */}
-            <ResizablePanel defaultSize={70}>
+            <ResizablePanel defaultSize={70} className="bg-[#1A1F2C]">
               <div className="h-full flex flex-col">
-                <div className="flex items-center justify-between p-2 border-b">
+                <div className="flex items-center justify-between p-2 bg-[#252B3B] border-b border-[#2D3548]">
                   <Select value={language} onValueChange={setLanguage}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-[180px] bg-[#2D3548] border-[#4F46E5] text-white">
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="c">C</SelectItem>
-                      <SelectItem value="cpp">C++</SelectItem>
-                      <SelectItem value="java">Java</SelectItem>
-                      <SelectItem value="python">Python</SelectItem>
+                    <SelectContent className="bg-[#252B3B] border-[#2D3548]">
+                      <SelectItem value="c" className="text-white hover:bg-[#2D3548]">C</SelectItem>
+                      <SelectItem value="cpp" className="text-white hover:bg-[#2D3548]">C++</SelectItem>
+                      <SelectItem value="java" className="text-white hover:bg-[#2D3548]">Java</SelectItem>
+                      <SelectItem value="python" className="text-white hover:bg-[#2D3548]">Python</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -451,12 +477,12 @@ public class Solution {
               </div>
             </ResizablePanel>
             
-            <ResizableHandle />
+            <ResizableHandle className="bg-[#2D3548] h-1" />
             
             {/* Test cases and output section */}
-            <ResizablePanel defaultSize={30}>
+            <ResizablePanel defaultSize={30} className="bg-[#252B3B]">
               <div className="h-full overflow-auto p-4">
-                <h3 className="font-medium mb-3">Test Results</h3>
+                <h3 className="font-medium text-white mb-3">Test Results</h3>
                 
                 {results.length > 0 ? (
                   <div className="space-y-3">
@@ -468,8 +494,8 @@ public class Solution {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
+                  <div className="text-center py-8 text-gray-400">
+                    <AlertCircle className="mx-auto h-12 w-12 text-gray-500" />
                     <p className="mt-2">Run your code to see the results here</p>
                   </div>
                 )}

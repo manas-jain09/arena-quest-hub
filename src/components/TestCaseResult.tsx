@@ -21,22 +21,22 @@ export const TestCaseResult: React.FC<TestResultProps> = ({ result }) => {
     <Collapsible
       open={isOpen}
       onOpenChange={setIsOpen}
-      className="border rounded-md overflow-hidden"
+      className="border border-[#2D3548] rounded-md overflow-hidden"
     >
-      <CollapsibleTrigger className="flex items-center justify-between w-full p-3 text-left bg-white hover:bg-gray-50">
+      <CollapsibleTrigger className="flex items-center justify-between w-full p-3 text-left bg-[#252B3B] hover:bg-[#2D3548] transition-colors">
         <div className="flex items-center gap-2">
           {result.status === 'passed' ? (
             <CheckCircle className="h-5 w-5 text-green-500" />
           ) : (
             <XCircle className="h-5 w-5 text-red-500" />
           )}
-          <span>
+          <span className="text-gray-200">
             Test Case {result.id} 
             {result.input === "Hidden" && " (Hidden)"}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className={result.status === 'passed' ? 'text-green-600' : 'text-red-600'}>
+          <span className={result.status === 'passed' ? 'text-green-400' : 'text-red-400'}>
             {result.status === 'passed' ? `+${result.points} points` : '0 points'}
           </span>
           <div className="w-5 h-5 flex items-center justify-center">
@@ -53,26 +53,26 @@ export const TestCaseResult: React.FC<TestResultProps> = ({ result }) => {
           </div>
         </div>
       </CollapsibleTrigger>
-      <CollapsibleContent className="border-t bg-gray-50">
+      <CollapsibleContent className="border-t border-[#2D3548] bg-[#1A1F2C]">
         <div className="p-3 space-y-2 text-sm">
           {result.input !== "Hidden" && (
             <div>
-              <div className="font-medium">Input:</div>
-              <pre className="mt-1 p-2 bg-gray-100 rounded overflow-x-auto">{result.input}</pre>
+              <div className="font-medium text-gray-400">Input:</div>
+              <pre className="mt-1 p-2 bg-[#252B3B] rounded overflow-x-auto text-gray-300 font-mono">{result.input}</pre>
             </div>
           )}
           
           {result.expected !== "Hidden" && (
             <div>
-              <div className="font-medium">Expected Output:</div>
-              <pre className="mt-1 p-2 bg-gray-100 rounded overflow-x-auto">{result.expected}</pre>
+              <div className="font-medium text-gray-400">Expected Output:</div>
+              <pre className="mt-1 p-2 bg-[#252B3B] rounded overflow-x-auto text-gray-300 font-mono">{result.expected}</pre>
             </div>
           )}
           
           {result.actual !== "Hidden" && result.status === 'failed' && (
             <div>
-              <div className="font-medium">Your Output:</div>
-              <pre className="mt-1 p-2 bg-gray-100 rounded overflow-x-auto">{result.actual}</pre>
+              <div className="font-medium text-gray-400">Your Output:</div>
+              <pre className="mt-1 p-2 bg-[#252B3B] rounded overflow-x-auto text-gray-300 font-mono">{result.actual}</pre>
             </div>
           )}
         </div>

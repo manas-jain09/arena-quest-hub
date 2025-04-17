@@ -9,9 +9,6 @@ interface CodeEditorProps {
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, language }) => {
   const editorRef = useRef<HTMLTextAreaElement>(null);
-
-  // In a real implementation, you would integrate a code editor like Monaco or CodeMirror
-  // For this demo, we'll use a styled textarea
   
   // Map language to syntax highlighting (would be handled by the editor library)
   const getLanguageMode = () => {
@@ -48,12 +45,12 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, language
   }, [onChange]);
 
   return (
-    <div className="h-full w-full relative bg-gray-900 text-white">
+    <div className="h-full w-full relative bg-[#1A1F2C]">
       <textarea
         ref={editorRef}
         value={code}
         onChange={(e) => onChange(e.target.value)}
-        className="h-full w-full resize-none bg-gray-900 text-white font-mono p-4 focus:outline-none"
+        className="h-full w-full resize-none bg-[#1A1F2C] text-[#E4E4E4] font-mono p-4 focus:outline-none text-sm leading-6"
         spellCheck="false"
         data-language={getLanguageMode()}
       />
