@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { ArticleView } from "./components/ArticleView";
-import { PracticeWindow } from "./components/PracticeWindow";
 import { ReactNode } from "react";
 
 // Create a client
@@ -31,7 +30,6 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/articles/:questionId" element={<ArticleView />} />
-          <Route path="/practice/:questionId" element={<PracticeWindow />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

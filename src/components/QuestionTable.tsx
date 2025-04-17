@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -212,8 +213,8 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
     }
   };
 
-  const handlePracticeClick = (questionId: string) => {
-    window.open(`/practice/${questionId}`, '_blank');
+  const handlePracticeClick = async (practiceLink: string) => {
+    window.open(practiceLink, '_blank');
   };
 
   const totalQuestions = topics.reduce((acc, topic) => acc + topic.questions.length, 0);
@@ -329,7 +330,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handlePracticeClick(question.id);
+                          handlePracticeClick(question.practice_link);
                         }}
                         className="text-arena-red hover:underline inline-flex items-center gap-1 p-0 h-auto"
                       >
