@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key'; // use env variable in production
+const COOKIE_NAME = 'Auth_Token'; // Define your cookie name
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
@@ -25,30 +26,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '2h' });
 
+    // Set the cookie
     res.setHeader('Set-Cookie', cookie.serialize(COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 2 * 60 * 60,
+      maxAge: 2 * 60 * 60, // 2 hours
       path: '/',
       sameSite: 'lax',
     }));
 
-    return res.status(200).json({ user });
+    // Return basic user info (before the response is sent)
+    return res.status(200).json({
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        prn: user.prn,
+      },
+    });
 
   } catch (err: any) {
     console.error('Login Error:', err);
     return res.status(500).json({ message: 'Internal server error' });
   }
 }
-
-  // Return basic user info
-  res.status(200).json({
-    user: {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      prn: user.prn,
-    },
-  });
-}
-
