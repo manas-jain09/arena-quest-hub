@@ -33,13 +33,26 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
     
     try {
       if (isLogin) {
-        // Login logic
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('prn', prn)
-          .eq('password', password)
-          .single();
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prn, password }),
+        });
+        
+        const result = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(result.message || 'Login failed');
+        }
+        
+        toast({
+          title: "Success",
+          description: "You have successfully logged in!",
+        });
+        onSuccess(result.user); // Assuming backend returns basic user info
+
         
         if (error) {
           throw new Error('Invalid PRN or password');
