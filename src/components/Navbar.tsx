@@ -33,11 +33,11 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Home size={16} />
                 <span>Home</span>
               </Link>
-              <a href={`https://yukti.arenahq-mitwpu.in/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
+              <a href={`https://yukti.ikshvaku-innovations.in/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
                 <Bot size={16} />
                 <span>Yukti</span>
               </a>
-              <a href={`https://yodha.arenahq-mitwpu.in/profile/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1">
+              <a href={`https://yodha.ikshvaku-innovations.in/profile/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1">
                 <User size={16} />
                 <span>Yodha</span>
               </a>
