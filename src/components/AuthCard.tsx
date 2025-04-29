@@ -42,7 +42,7 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
           .single();
         
         if (error) {
-          throw new Error('Invalid PRN or password');
+          throw new Error('Invalid Username or password');
         }
         
         if (data) {
@@ -133,10 +133,10 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
             </>
           )}
           <div className="space-y-2">
-            <Label htmlFor="prn">PRN</Label>
+            <Label htmlFor="prn">Username</Label>
             <Input 
               id="prn" 
-              placeholder="Enter your PRN" 
+              placeholder="Enter your Username" 
               value={prn}
               onChange={(e) => setPrn(e.target.value)}
               className="arena-input"
