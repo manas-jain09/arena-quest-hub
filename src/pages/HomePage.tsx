@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { LearningPathCard } from '@/components/LearningPathCard';
 import { QuestionTable } from '@/components/QuestionTable';
@@ -49,8 +50,38 @@ export const HomePage = ({ userId }: HomePageProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPathId, setSelectedPathId] = useState<string | null>(null);
   const [learningPaths, setLearningPaths] = useState<LearningPath[]>([]);
+  const [filteredPaths, setFilteredPaths] = useState<LearningPath[]>([]);
   const [topicsWithQuestions, setTopicsWithQuestions] = useState<Topic[]>([]);
+  const [assignedPaths, setAssignedPaths] = useState<string[]>([]);
   const { toast } = useToast();
+  
+  // Fetch user's assigned learning paths
+  useEffect(() => {
+    const fetchUserAssignedPaths = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('assigned_learning_paths')
+          .eq('id', userId)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching assigned paths:', error);
+          return;
+        }
+        
+        if (data && data.assigned_learning_paths) {
+          setAssignedPaths(data.assigned_learning_paths);
+        }
+      } catch (error: any) {
+        console.error('Error in fetchUserAssignedPaths:', error.message);
+      }
+    };
+    
+    if (userId) {
+      fetchUserAssignedPaths();
+    }
+  }, [userId]);
   
   useEffect(() => {
     const fetchLearningPaths = async () => {
@@ -121,6 +152,22 @@ export const HomePage = ({ userId }: HomePageProps) => {
     
     fetchLearningPaths();
   }, [toast]);
+  
+  // Filter learning paths based on user's assigned paths
+  useEffect(() => {
+    if (learningPaths.length === 0 || assignedPaths.length === 0) {
+      // If no assigned paths, show all paths (fallback behavior)
+      setFilteredPaths(learningPaths);
+      return;
+    }
+    
+    // Filter paths to only show those assigned to the user
+    const filtered = learningPaths.filter(path => 
+      assignedPaths.includes(path.id)
+    );
+    
+    setFilteredPaths(filtered);
+  }, [learningPaths, assignedPaths]);
   
   useEffect(() => {
     if (!selectedPathId) return;
@@ -209,19 +256,26 @@ export const HomePage = ({ userId }: HomePageProps) => {
       ) : !selectedPathId ? (
         <>
           <h1 className="text-3xl font-bold text-arena-darkGray mb-6">Learning Paths</h1>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {learningPaths.map(path => (
-              <LearningPathCard
-                key={path.id}
-                title={path.title}
-                description={path.description}
-                difficulty={path.difficulty}
-                topicsCount={path.topicsCount || 0}
-                questionsCount={path.questionsCount || 0}
-                onClick={() => handlePathSelect(path.id)}
-              />
-            ))}
-          </div>
+          {filteredPaths.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {filteredPaths.map(path => (
+                <LearningPathCard
+                  key={path.id}
+                  title={path.title}
+                  description={path.description}
+                  difficulty={path.difficulty}
+                  topicsCount={path.topicsCount || 0}
+                  questionsCount={path.questionsCount || 0}
+                  onClick={() => handlePathSelect(path.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <h2 className="text-xl text-arena-darkGray mb-2">No learning paths assigned yet</h2>
+              <p className="text-arena-gray">Please contact your administrator to get learning paths assigned to your account.</p>
+            </div>
+          )}
         </>
       ) : (
         <>
