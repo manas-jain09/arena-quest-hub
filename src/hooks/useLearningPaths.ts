@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { LearningPath } from '@/types';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 // Helper function to get difficulty sort order
 const getDifficultyOrder = (difficulty: string): number => {
@@ -34,11 +34,7 @@ export function useLearningPaths(userId: string) {
         
         if (error) {
           console.error('Error fetching assigned paths:', error);
-          toast({
-            title: "Error",
-            description: `Failed to load assigned paths: ${error.message}`,
-            variant: "destructive",
-          });
+          toast.error(`Failed to load assigned paths: ${error.message}`);
           return;
         }
         
@@ -105,15 +101,22 @@ export function useLearningPaths(userId: string) {
               
               const topicIds = topics?.map(t => t.id) || [];
               
-              const { count: questionsCount } = await supabase
-                .from('questions')
-                .select('*', { count: 'exact', head: true })
-                .in('topic_id', topicIds);
+              let questionsCount = 0;
+              if (topicIds.length > 0) {
+                const { count, error: countError } = await supabase
+                  .from('questions')
+                  .select('*', { count: 'exact', head: true })
+                  .in('topic_id', topicIds);
+                
+                if (!countError) {
+                  questionsCount = count || 0;
+                }
+              }
               
               return {
                 ...path,
                 topicsCount: topicsCount || 0,
-                questionsCount: questionsCount || 0
+                questionsCount: questionsCount
               };
             })
           );
@@ -125,14 +128,16 @@ export function useLearningPaths(userId: string) {
           
           console.log('All learning paths with counts:', sortedPaths);
           setLearningPaths(sortedPaths);
+          
+          // If no assigned paths yet, show all paths as a default
+          if (assignedPaths.length === 0) {
+            console.log('No assigned paths yet, showing all paths as default');
+            setFilteredPaths(sortedPaths);
+          }
         }
       } catch (error: any) {
         console.error('Error fetching learning paths:', error);
-        toast({
-          title: "Error",
-          description: `Failed to load learning paths: ${error.message}`,
-          variant: "destructive",
-        });
+        toast.error(`Failed to load learning paths: ${error.message}`);
       } finally {
         setIsLoading(false);
       }
@@ -148,12 +153,10 @@ export function useLearningPaths(userId: string) {
     
     if (learningPaths.length === 0) {
       console.log('No learning paths available to filter');
-      setFilteredPaths([]);
       return;
     }
     
     if (!assignedPaths || assignedPaths.length === 0) {
-      // If no assigned paths, show all paths as fallback
       console.log('No assigned paths, showing all paths');
       setFilteredPaths(learningPaths);
       return;

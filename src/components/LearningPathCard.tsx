@@ -21,15 +21,15 @@ export const LearningPathCard = ({
   questionsCount,
   onClick
 }: LearningPathCardProps) => {
+  // Debug information
+  console.log(`Rendering card: ${title}, difficulty: ${difficulty}, topicsCount: ${topicsCount}, questionsCount: ${questionsCount}`);
+  
   const difficultyMap = {
     easy: { color: "bg-green-100 text-green-800 border-green-200", text: "Easy", bgGradient: "from-green-50 to-green-100" },
     medium: { color: "bg-yellow-100 text-yellow-800 border-yellow-200", text: "Medium", bgGradient: "from-yellow-50 to-yellow-100" },
     hard: { color: "bg-red-100 text-red-800 border-red-200", text: "Hard", bgGradient: "from-red-50 to-red-100" },
     theory: { color: "bg-blue-100 text-blue-800 border-blue-200", text: "Theory", bgGradient: "from-blue-50 to-blue-100" }
   };
-
-  // Debug the card visibility
-  console.log(`Rendering card: ${title}, difficulty: ${difficulty}`);
 
   return (
     <motion.div
@@ -42,10 +42,10 @@ export const LearningPathCard = ({
         className={`cursor-pointer h-full border-2 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden bg-white`}
         onClick={onClick}
       >
-        <CardHeader className={`bg-gradient-to-br ${difficultyMap[difficulty].bgGradient}`}>
+        <CardHeader className={`bg-gradient-to-br ${difficultyMap[difficulty].bgGradient} border-b`}>
           <div className="flex justify-between items-start">
             <CardTitle className="text-xl font-bold text-gray-800">{title}</CardTitle>
-            <Badge className={`${difficultyMap[difficulty].color} font-medium px-3 py-1`}>
+            <Badge className={`${difficultyMap[difficulty].color} font-medium px-3 py-1 border`}>
               {difficultyMap[difficulty].text}
             </Badge>
           </div>

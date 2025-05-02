@@ -2,10 +2,12 @@
 import { useState, useEffect } from 'react';
 import { LearningPathCard } from '@/components/LearningPathCard';
 import { QuestionTable } from '@/components/QuestionTable';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { useLearningPaths } from '@/hooks/useLearningPaths';
 import { useTopicsWithQuestions } from '@/hooks/useTopicsWithQuestions';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface HomePageProps {
   userId: string;
@@ -15,7 +17,6 @@ export const HomePage = ({ userId }: HomePageProps) => {
   const [selectedPathId, setSelectedPathId] = useState<string | null>(null);
   const { isLoading: isPathsLoading, filteredPaths } = useLearningPaths(userId);
   const { isLoading: isTopicsLoading, topicsWithQuestions } = useTopicsWithQuestions(selectedPathId, userId);
-  const { toast } = useToast();
   
   const isLoading = isPathsLoading || (selectedPathId && isTopicsLoading);
   
@@ -45,15 +46,20 @@ export const HomePage = ({ userId }: HomePageProps) => {
   useEffect(() => {
     console.log('UserId:', userId);
     console.log('Filtered Paths:', filteredPaths);
+    console.log('Filtered Paths length:', filteredPaths.length);
     console.log('Is Loading:', isLoading);
   }, [userId, filteredPaths, isLoading]);
 
   return (
-    <div className="container mx-auto px-4 py-8 bg-pattern-dots">
+    <div className="container mx-auto px-4 py-8 bg-pattern-dots min-h-screen">
       {isLoading ? (
         <div className="flex flex-col justify-center items-center h-64">
-          <div className="loading-spinner"></div>
-          <p className="mt-4 text-gray-600 animate-pulse-slow">Loading your learning experience...</p>
+          <motion.div 
+            className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-arena-red"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+          <p className="mt-4 text-gray-600 animate-pulse">Loading your learning experience...</p>
         </div>
       ) : !selectedPathId ? (
         <motion.div 
@@ -72,25 +78,28 @@ export const HomePage = ({ userId }: HomePageProps) => {
           </motion.h1>
           
           {filteredPaths.length > 0 ? (
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              variants={container}
-              initial="hidden"
-              animate="show"
-            >
-              {filteredPaths.map((path) => (
-                <motion.div key={path.id} variants={item} className="w-full">
-                  <LearningPathCard
-                    title={path.title}
-                    description={path.description}
-                    difficulty={path.difficulty as 'easy' | 'medium' | 'hard' | 'theory'}
-                    topicsCount={path.topicsCount || 0}
-                    questionsCount={path.questionsCount || 0}
-                    onClick={() => handlePathSelect(path.id)}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
+            <>
+              <p className="text-gray-600 mb-6">Total paths available: {filteredPaths.length}</p>
+              <motion.div 
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                variants={container}
+                initial="hidden"
+                animate="show"
+              >
+                {filteredPaths.map((path) => (
+                  <motion.div key={path.id} variants={item} className="w-full">
+                    <LearningPathCard
+                      title={path.title}
+                      description={path.description}
+                      difficulty={path.difficulty as 'easy' | 'medium' | 'hard' | 'theory'}
+                      topicsCount={path.topicsCount || 0}
+                      questionsCount={path.questionsCount || 0}
+                      onClick={() => handlePathSelect(path.id)}
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+            </>
           ) : (
             <motion.div 
               className="text-center py-12 bg-white rounded-lg shadow-md p-8"
@@ -115,19 +124,16 @@ export const HomePage = ({ userId }: HomePageProps) => {
           transition={{ duration: 0.3 }}
         >
           <div className="mb-6 flex items-center">
-            <motion.button 
+            <Button 
               onClick={() => setSelectedPathId(null)}
-              className="mr-4 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md text-sm flex items-center shadow-sm hover:shadow transition-all duration-200"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
+              className="mr-4 flex items-center gap-2"
+              variant="outline"
             >
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
+              <ArrowLeft size={16} />
               Back to Learning Paths
-            </motion.button>
+            </Button>
             <h1 className="text-2xl font-bold text-gray-800">
-              <span className="bg-gradient-to-r from-gray-800 to-gray-600/70 text-transparent bg-clip-text">
+              <span className="bg-gradient-to-r from-gray-800 to-gray-600 text-transparent bg-clip-text">
                 {selectedPath?.title}
               </span>
             </h1>

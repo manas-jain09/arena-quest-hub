@@ -1,10 +1,10 @@
 
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
 
 interface ArticleData {
   id: string;
@@ -20,7 +20,6 @@ interface ArticleData {
 
 export function ArticleView() {
   const { questionId } = useParams();
-  const navigate = useNavigate();
   const [article, setArticle] = useState<ArticleData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -62,67 +61,72 @@ export function ArticleView() {
     }
   }, [questionId]);
 
-  const handleGoBack = () => {
-    navigate(-1);
-  };
-
   const getDifficultyClass = (difficulty?: string) => {
     if (!difficulty) return '';
     
     switch (difficulty.toLowerCase()) {
       case 'easy':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 border border-green-200';
       case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
       case 'hard':
-        return 'bg-arena-lightRed text-arena-darkRed';
+        return 'bg-red-100 text-red-800 border border-red-200';
       case 'theory':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 border border-blue-200';
       default:
         return '';
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Button 
-        variant="ghost" 
-        onClick={handleGoBack} 
-        className="mb-4 flex items-center gap-2"
-      >
-        <ArrowLeft size={16} />
-        <span>Back</span>
-      </Button>
-      
+    <div className="container max-w-4xl mx-auto px-4 py-12">
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-arena-red"></div>
+          <motion.div 
+            className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-arena-red"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
         </div>
       ) : article ? (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="p-6">
-            <div className="flex items-center gap-3 mb-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white rounded-xl shadow-lg overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-gray-50 to-white p-8 border-b border-gray-100">
+            <div className="flex items-center gap-3 mb-4">
               {article.question?.difficulty && (
-                <span className={`rounded-full px-3 py-1 text-xs font-medium ${getDifficultyClass(article.question.difficulty)}`}>
+                <Badge className={`px-3 py-1 text-xs font-medium ${getDifficultyClass(article.question.difficulty)}`}>
                   {article.question.difficulty}
-                </span>
+                </Badge>
               )}
-              <h1 className="text-2xl font-bold text-arena-darkGray">
-                {article.question?.title || 'Article'}
-              </h1>
             </div>
-            
+            <h1 className="text-3xl font-bold text-gray-800">
+              {article.question?.title || 'Article'}
+            </h1>
+            <div className="mt-2 text-sm text-gray-500">
+              Last updated: {new Date(article.updated_at).toLocaleDateString()}
+            </div>
+          </div>
+          
+          <div className="p-8">
             <div 
               className="prose prose-slate max-w-none forum-content" 
               dangerouslySetInnerHTML={{ __html: article.content }} 
             />
           </div>
-        </div>
+        </motion.div>
       ) : (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <h2 className="text-xl text-gray-700">Article not found</h2>
-          <p className="mt-2 text-gray-500">The article you're looking for could not be found.</p>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="bg-white rounded-lg shadow-md p-8 text-center"
+        >
+          <h2 className="text-xl text-gray-700 mb-4">Article not found</h2>
+          <p className="text-gray-500">The article you're looking for could not be found.</p>
+        </motion.div>
       )}
     </div>
   );
