@@ -37,6 +37,8 @@ const Index = () => {
       title: "Login Successful",
       description: `Welcome back, ${userData.username}!`,
     });
+    
+    console.log('User logged in:', userData);
   };
 
   const handleLogout = () => {

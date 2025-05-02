@@ -21,10 +21,10 @@ export const LearningPathCard = ({
   onClick
 }: LearningPathCardProps) => {
   const difficultyMap = {
-    easy: { color: "arena-badge-easy", text: "Easy", bgGradient: "from-green-50 to-green-100" },
-    medium: { color: "arena-badge-medium", text: "Medium", bgGradient: "from-yellow-50 to-yellow-100" },
-    hard: { color: "arena-badge-hard", text: "Hard", bgGradient: "from-red-50 to-red-100" },
-    theory: { color: "arena-badge-theory", text: "Theory", bgGradient: "from-blue-50 to-blue-100" }
+    easy: { color: "bg-green-100 text-green-800 border-green-200", text: "Easy", bgGradient: "from-green-50 to-green-100" },
+    medium: { color: "bg-yellow-100 text-yellow-800 border-yellow-200", text: "Medium", bgGradient: "from-yellow-50 to-yellow-100" },
+    hard: { color: "bg-red-100 text-red-800 border-red-200", text: "Hard", bgGradient: "from-red-50 to-red-100" },
+    theory: { color: "bg-blue-100 text-blue-800 border-blue-200", text: "Theory", bgGradient: "from-blue-50 to-blue-100" }
   };
 
   return (
@@ -35,7 +35,7 @@ export const LearningPathCard = ({
       className="h-full"
     >
       <Card 
-        className="arena-card cursor-pointer h-full border-0 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden bg-white"
+        className="cursor-pointer h-full border shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden bg-white"
         onClick={onClick}
       >
         <CardHeader className={`bg-gradient-to-br ${difficultyMap[difficulty].bgGradient} border-b`}>
@@ -48,7 +48,7 @@ export const LearningPathCard = ({
           <CardDescription className="mt-2 text-gray-700">{description}</CardDescription>
         </CardHeader>
         <CardContent className="pt-4 pb-5">
-          <div className="flex justify-between text-sm text-arena-darkGray">
+          <div className="flex justify-between text-sm text-gray-600">
             <div className="flex items-center">
               <span className="bg-gray-100 rounded-full p-1 px-2 mr-2 font-medium">{topicsCount}</span>
               <span>Topics</span>

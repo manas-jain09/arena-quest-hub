@@ -62,6 +62,8 @@ export function useLearningPaths(userId: string) {
   useEffect(() => {
     const fetchLearningPaths = async () => {
       try {
+        setIsLoading(true);
+        console.log('Fetching all learning paths');
         const { data, error } = await supabase
           .from('learning_paths')
           .select('*')
@@ -117,6 +119,7 @@ export function useLearningPaths(userId: string) {
           setLearningPaths(sortedPaths);
         }
       } catch (error: any) {
+        console.error('Error fetching learning paths:', error);
         toast({
           title: "Error",
           description: `Failed to load learning paths: ${error.message}`,
@@ -153,5 +156,5 @@ export function useLearningPaths(userId: string) {
     setFilteredPaths(filtered);
   }, [learningPaths, assignedPaths]);
 
-  return { isLoading, filteredPaths, setFilteredPaths };
+  return { isLoading, filteredPaths, learningPaths, assignedPaths };
 }
