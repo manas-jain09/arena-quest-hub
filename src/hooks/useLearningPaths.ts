@@ -25,6 +25,7 @@ export function useLearningPaths(userId: string) {
   useEffect(() => {
     const fetchUserAssignedPaths = async () => {
       try {
+        console.log('Fetching assigned paths for user:', userId);
         const { data, error } = await supabase
           .from('users')
           .select('assigned_learning_paths')
@@ -33,11 +34,19 @@ export function useLearningPaths(userId: string) {
         
         if (error) {
           console.error('Error fetching assigned paths:', error);
+          toast({
+            title: "Error",
+            description: `Failed to load assigned paths: ${error.message}`,
+            variant: "destructive",
+          });
           return;
         }
         
         if (data && data.assigned_learning_paths) {
+          console.log('Assigned paths found:', data.assigned_learning_paths);
           setAssignedPaths(data.assigned_learning_paths);
+        } else {
+          console.log('No assigned paths found for user:', userId);
         }
       } catch (error: any) {
         console.error('Error in fetchUserAssignedPaths:', error.message);
@@ -104,6 +113,7 @@ export function useLearningPaths(userId: string) {
             return getDifficultyOrder(a.difficulty) - getDifficultyOrder(b.difficulty);
           });
           
+          console.log('All learning paths:', sortedPaths);
           setLearningPaths(sortedPaths);
         }
       } catch (error: any) {
@@ -122,8 +132,14 @@ export function useLearningPaths(userId: string) {
   
   // Filter learning paths based on user's assigned paths
   useEffect(() => {
-    if (learningPaths.length === 0 || assignedPaths.length === 0) {
-      // If no assigned paths, show all paths (fallback behavior)
+    if (learningPaths.length === 0) {
+      setFilteredPaths([]);
+      return;
+    }
+    
+    if (assignedPaths.length === 0) {
+      // If no assigned paths, show all paths as fallback
+      console.log('No assigned paths, showing all paths');
       setFilteredPaths(learningPaths);
       return;
     }
@@ -133,6 +149,7 @@ export function useLearningPaths(userId: string) {
       assignedPaths.includes(path.id)
     );
     
+    console.log('Filtered paths based on assignments:', filtered);
     setFilteredPaths(filtered);
   }, [learningPaths, assignedPaths]);
 

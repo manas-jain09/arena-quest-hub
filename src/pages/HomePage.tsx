@@ -5,248 +5,26 @@ import { QuestionTable } from '@/components/QuestionTable';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
-
-interface LearningPath {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: 'easy' | 'medium' | 'hard' | 'theory';
-  topicsCount?: number;
-  questionsCount?: number;
-}
-
-interface Topic {
-  id: string;
-  name: string;
-  learning_path_id: string;
-  questions: Question[];
-}
-
-interface Question {
-  id: string;
-  title: string;
-  solution_link: string;
-  practice_link: string;
-  difficulty: 'easy' | 'medium' | 'hard' | 'theory';
-  is_completed: boolean;
-  is_marked_for_revision: boolean;
-}
+import { useLearningPaths } from '@/hooks/useLearningPaths';
+import { useTopicsWithQuestions } from '@/hooks/useTopicsWithQuestions';
 
 interface HomePageProps {
   userId: string;
 }
 
-// Helper function to get difficulty sort order
-const getDifficultyOrder = (difficulty: string): number => {
-  switch (difficulty) {
-    case 'theory': return 1;
-    case 'easy': return 2;
-    case 'medium': return 3;
-    case 'hard': return 4;
-    default: return 5;
-  }
-};
-
 export const HomePage = ({ userId }: HomePageProps) => {
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedPathId, setSelectedPathId] = useState<string | null>(null);
-  const [learningPaths, setLearningPaths] = useState<LearningPath[]>([]);
-  const [filteredPaths, setFilteredPaths] = useState<LearningPath[]>([]);
-  const [topicsWithQuestions, setTopicsWithQuestions] = useState<Topic[]>([]);
-  const [assignedPaths, setAssignedPaths] = useState<string[]>([]);
+  const { isLoading: isPathsLoading, filteredPaths } = useLearningPaths(userId);
+  const { isLoading: isTopicsLoading, topicsWithQuestions } = useTopicsWithQuestions(selectedPathId, userId);
   const { toast } = useToast();
   
-  // Fetch user's assigned learning paths
-  useEffect(() => {
-    const fetchUserAssignedPaths = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('assigned_learning_paths')
-          .eq('id', userId)
-          .single();
-        
-        if (error) {
-          console.error('Error fetching assigned paths:', error);
-          return;
-        }
-        
-        if (data && data.assigned_learning_paths) {
-          setAssignedPaths(data.assigned_learning_paths);
-        }
-      } catch (error: any) {
-        console.error('Error in fetchUserAssignedPaths:', error.message);
-      }
-    };
-    
-    if (userId) {
-      fetchUserAssignedPaths();
-    }
-  }, [userId]);
-  
-  useEffect(() => {
-    const fetchLearningPaths = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('learning_paths')
-          .select('*')
-          .order('sr', { ascending: true });
-        
-        if (error) {
-          throw error;
-        }
-        
-        if (data) {
-          const pathsWithCount = await Promise.all(
-            data.map(async (path) => {
-              const { count: topicsCount, error: topicsError } = await supabase
-                .from('topics')
-                .select('*', { count: 'exact', head: true })
-                .eq('learning_path_id', path.id);
-              
-              const { data: topics, error: questionsError } = await supabase
-                .from('topics')
-                .select('id')
-                .eq('learning_path_id', path.id);
-              
-              if (topicsError || questionsError) {
-                console.error('Error fetching counts', topicsError || questionsError);
-                return {
-                  ...path,
-                  topicsCount: 0,
-                  questionsCount: 0
-                };
-              }
-              
-              const topicIds = topics?.map(t => t.id) || [];
-              
-              const { count: questionsCount } = await supabase
-                .from('questions')
-                .select('*', { count: 'exact', head: true })
-                .in('topic_id', topicIds);
-              
-              return {
-                ...path,
-                topicsCount: topicsCount || 0,
-                questionsCount: questionsCount || 0
-              };
-            })
-          );
-          
-          // Sort paths by difficulty
-          const sortedPaths = pathsWithCount.sort((a, b) => {
-            return getDifficultyOrder(a.difficulty) - getDifficultyOrder(b.difficulty);
-          });
-          
-          setLearningPaths(sortedPaths);
-        }
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: `Failed to load learning paths: ${error.message}`,
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchLearningPaths();
-  }, [toast]);
-  
-  // Filter learning paths based on user's assigned paths
-  useEffect(() => {
-    if (learningPaths.length === 0 || assignedPaths.length === 0) {
-      // If no assigned paths, show all paths (fallback behavior)
-      setFilteredPaths(learningPaths);
-      return;
-    }
-    
-    // Filter paths to only show those assigned to the user
-    const filtered = learningPaths.filter(path => 
-      assignedPaths.includes(path.id)
-    );
-    
-    setFilteredPaths(filtered);
-  }, [learningPaths, assignedPaths]);
-  
-  useEffect(() => {
-    if (!selectedPathId) return;
-    
-    const fetchTopicsAndQuestions = async () => {
-      setIsLoading(true);
-      try {
-        const { data: topics, error: topicsError } = await supabase
-          .from('topics')
-          .select('*')
-          .eq('learning_path_id', selectedPathId);
-        
-        if (topicsError) {
-          throw topicsError;
-        }
-        
-        if (!topics) {
-          throw new Error('No topics found');
-        }
-        
-        const topicsWithQuestions = await Promise.all(
-          topics.map(async (topic) => {
-            const { data: questions, error: questionsError } = await supabase
-              .from('questions')
-              .select('id, title, solution_link, practice_link, difficulty')
-              .eq('topic_id', topic.id)
-              .order('id', { ascending: true }); // Sort questions by ID
-            
-            if (questionsError) {
-              throw questionsError;
-            }
-            
-            const { data: progress, error: progressError } = await supabase
-              .from('user_progress')
-              .select('*')
-              .eq('user_id', userId)
-              .in('question_id', questions?.map(q => q.id) || []);
-            
-            if (progressError) {
-              throw progressError;
-            }
-            
-            const questionsWithProgress = questions?.map(question => {
-              const userProgress = progress?.find(p => p.question_id === question.id);
-              return {
-                ...question,
-                is_completed: userProgress?.is_completed || false,
-                is_marked_for_revision: userProgress?.is_marked_for_revision || false
-              };
-            }) || [];
-            
-            return {
-              ...topic,
-              questions: questionsWithProgress
-            };
-          })
-        );
-        
-        setTopicsWithQuestions(topicsWithQuestions);
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: `Failed to load topics and questions: ${error.message}`,
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchTopicsAndQuestions();
-  }, [selectedPathId, userId, toast]);
+  const isLoading = isPathsLoading || (selectedPathId && isTopicsLoading);
   
   const handlePathSelect = (pathId: string) => {
     setSelectedPathId(pathId);
   };
   
-  const selectedPath = learningPaths.find(path => path.id === selectedPathId);
+  const selectedPath = filteredPaths.find(path => path.id === selectedPathId);
 
   const container = {
     hidden: { opacity: 0 },
@@ -262,6 +40,12 @@ export const HomePage = ({ userId }: HomePageProps) => {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 }
   };
+  
+  // Debug information
+  useEffect(() => {
+    console.log('UserId:', userId);
+    console.log('Filtered Paths:', filteredPaths);
+  }, [userId, filteredPaths]);
 
   return (
     <div className="container mx-auto px-4 py-8 bg-pattern-dots">
@@ -280,7 +64,7 @@ export const HomePage = ({ userId }: HomePageProps) => {
             className="text-3xl font-bold text-arena-darkGray mb-6 relative"
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
             <span className="bg-gradient-to-r from-arena-red to-arena-darkRed text-transparent bg-clip-text">Learning Paths</span>
             <div className="h-1 w-20 bg-arena-red rounded-full mt-2"></div>

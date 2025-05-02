@@ -5,27 +5,50 @@ import { Navbar } from '@/components/Navbar';
 import { HomePage } from '@/pages/HomePage';
 import { Toaster } from '@/components/ui/toaster';
 import { motion } from 'framer-motion';
-
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  prn: string;
-}
+import { User } from '@/types';
+import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
 
+  // Try to load user from localStorage on component mount
+  useEffect(() => {
+    const savedUserId = localStorage.getItem('userId');
+    const savedUserData = localStorage.getItem('userData');
+    
+    if (savedUserId && savedUserData) {
+      try {
+        const userData = JSON.parse(savedUserData);
+        setUser(userData);
+        console.log('User restored from localStorage:', userData);
+      } catch (error) {
+        console.error('Failed to parse saved user data', error);
+      }
+    }
+  }, []);
+
   const handleLogin = (userData: User) => {
     setUser(userData);
-    // Store userId in localStorage for use in Yodha link
+    // Store full user data in localStorage
     localStorage.setItem('userId', userData.id);
+    localStorage.setItem('userData', JSON.stringify(userData));
+    
+    toast({
+      title: "Login Successful",
+      description: `Welcome back, ${userData.username}!`,
+    });
   };
 
   const handleLogout = () => {
     setUser(null);
-    // Clear userId from localStorage on logout
+    // Clear user data from localStorage on logout
     localStorage.removeItem('userId');
+    localStorage.removeItem('userData');
+    
+    toast({
+      title: "Logged Out",
+      description: "You have been logged out successfully.",
+    });
   };
 
   return (
