@@ -4,6 +4,7 @@ import { AuthCard } from '@/components/AuthCard';
 import { Navbar } from '@/components/Navbar';
 import { HomePage } from '@/pages/HomePage';
 import { Toaster } from '@/components/ui/toaster';
+import { motion } from 'framer-motion';
 
 interface User {
   id: string;
@@ -28,19 +29,30 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div 
+      className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       {user ? (
         <>
           <Navbar onLogout={handleLogout} />
           <HomePage userId={user.id} />
         </>
       ) : (
-        <div className="container mx-auto px-4">
-          <AuthCard onSuccess={handleLogin} />
+        <div className="container mx-auto px-4 pt-8 md:pt-16">
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <AuthCard onSuccess={handleLogin} />
+          </motion.div>
         </div>
       )}
       <Toaster />
-    </div>
+    </motion.div>
   );
 };
 
