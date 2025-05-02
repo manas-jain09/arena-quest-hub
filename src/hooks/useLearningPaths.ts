@@ -42,19 +42,25 @@ export function useLearningPaths(userId: string) {
           return;
         }
         
-        if (data && data.assigned_learning_paths) {
+        if (data && data.assigned_learning_paths && Array.isArray(data.assigned_learning_paths)) {
           console.log('Assigned paths found:', data.assigned_learning_paths);
           setAssignedPaths(data.assigned_learning_paths);
         } else {
-          console.log('No assigned paths found for user:', userId);
+          console.log('No assigned paths found or invalid format for user:', userId);
+          console.log('Data received:', data);
+          // Initialize as empty array if undefined or not an array
+          setAssignedPaths([]);
         }
       } catch (error: any) {
         console.error('Error in fetchUserAssignedPaths:', error.message);
+        setAssignedPaths([]);
       }
     };
     
     if (userId) {
       fetchUserAssignedPaths();
+    } else {
+      console.log('No userId provided to useLearningPaths');
     }
   }, [userId]);
   
@@ -74,6 +80,8 @@ export function useLearningPaths(userId: string) {
         }
         
         if (data) {
+          console.log('Raw learning paths data:', data);
+          
           const pathsWithCount = await Promise.all(
             data.map(async (path) => {
               const { count: topicsCount, error: topicsError } = await supabase
@@ -115,7 +123,7 @@ export function useLearningPaths(userId: string) {
             return getDifficultyOrder(a.difficulty) - getDifficultyOrder(b.difficulty);
           });
           
-          console.log('All learning paths:', sortedPaths);
+          console.log('All learning paths with counts:', sortedPaths);
           setLearningPaths(sortedPaths);
         }
       } catch (error: any) {
@@ -135,12 +143,16 @@ export function useLearningPaths(userId: string) {
   
   // Filter learning paths based on user's assigned paths
   useEffect(() => {
+    console.log('Filtering paths with assignedPaths:', assignedPaths);
+    console.log('Available learningPaths:', learningPaths);
+    
     if (learningPaths.length === 0) {
+      console.log('No learning paths available to filter');
       setFilteredPaths([]);
       return;
     }
     
-    if (assignedPaths.length === 0) {
+    if (!assignedPaths || assignedPaths.length === 0) {
       // If no assigned paths, show all paths as fallback
       console.log('No assigned paths, showing all paths');
       setFilteredPaths(learningPaths);
@@ -153,7 +165,13 @@ export function useLearningPaths(userId: string) {
     );
     
     console.log('Filtered paths based on assignments:', filtered);
-    setFilteredPaths(filtered);
+    
+    if (filtered.length === 0) {
+      console.log('No matching paths found after filtering, showing all paths as fallback');
+      setFilteredPaths(learningPaths);
+    } else {
+      setFilteredPaths(filtered);
+    }
   }, [learningPaths, assignedPaths]);
 
   return { isLoading, filteredPaths, learningPaths, assignedPaths };

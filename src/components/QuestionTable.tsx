@@ -3,11 +3,21 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Check, ExternalLink, Star, Filter, X, BookText, Code } from 'lucide-react';
+import { 
+  Check, ExternalLink, Star, Filter, X, BookText, Code, 
+  ChevronDown, ChevronRight, CheckCircle, XCircle, FolderOpen 
+} from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
 
 export interface Question {
   id: string;
@@ -226,23 +236,27 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="p-4 bg-arena-lightGray border-b border-arena-gray flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-arena-darkGray">{learningPathTitle}</h2>
+      {/* Header */}
+      <div className="p-4 bg-gradient-to-r from-arena-lightGray to-white border-b border-arena-gray flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <FolderOpen className="text-arena-red" size={20} />
+          <h2 className="text-xl font-semibold text-arena-darkGray">{learningPathTitle}</h2>
+        </div>
         <div className="flex items-center space-x-2">
           <div className="hidden md:flex items-center gap-2 mr-4 text-sm text-arena-darkGray">
-            <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="w-32 h-3 bg-gray-200 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-arena-red" 
+                className="h-full bg-gradient-to-r from-arena-red to-arena-darkRed" 
                 style={{ width: `${completionPercentage}%` }}
               ></div>
             </div>
-            <span>{completedQuestions}/{totalQuestions} ({completionPercentage}%)</span>
+            <span className="font-medium">{completedQuestions}/{totalQuestions} ({completionPercentage}%)</span>
           </div>
           
           <Button 
             variant="outline" 
             size="sm" 
-            className="flex items-center gap-1.5" 
+            className="flex items-center gap-1.5 bg-white" 
             onClick={() => setShowFilter(!showFilter)}
           >
             <Filter size={14} />
@@ -251,12 +265,14 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
         </div>
       </div>
 
+      {/* Filter Options */}
       {showFilter && (
-        <div className="p-4 bg-white border-b border-arena-gray flex flex-wrap gap-2">
+        <div className="p-4 bg-white border-b border-arena-gray flex flex-wrap gap-2 animate-fade-in">
           <Button 
             variant={filterStatus === 'all' ? "default" : "outline"} 
             size="sm"
             onClick={() => setFilterStatus('all')}
+            className={filterStatus === 'all' ? "bg-arena-red hover:bg-arena-darkRed" : ""}
           >
             All
           </Button>
@@ -264,21 +280,27 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
             variant={filterStatus === 'solved' ? "default" : "outline"} 
             size="sm"
             onClick={() => setFilterStatus('solved')}
+            className={filterStatus === 'solved' ? "bg-arena-red hover:bg-arena-darkRed" : ""}
           >
+            <CheckCircle size={14} className="mr-1" />
             Solved
           </Button>
           <Button 
             variant={filterStatus === 'unsolved' ? "default" : "outline"} 
             size="sm"
             onClick={() => setFilterStatus('unsolved')}
+            className={filterStatus === 'unsolved' ? "bg-arena-red hover:bg-arena-darkRed" : ""}
           >
+            <XCircle size={14} className="mr-1" />
             Unsolved
           </Button>
           <Button 
             variant={filterStatus === 'revision' ? "default" : "outline"} 
             size="sm"
             onClick={() => setFilterStatus('revision')}
+            className={filterStatus === 'revision' ? "bg-arena-red hover:bg-arena-darkRed" : ""}
           >
+            <Star size={14} className="mr-1" />
             Marked for Revision
           </Button>
           <Button 
@@ -292,70 +314,93 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
         </div>
       )}
 
+      {/* Content */}
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left border-b border-arena-gray">
-              <th className="arena-table-header">Mark Done</th>
-              <th className="arena-table-header">Title</th>
-              <th className="arena-table-header">Practice</th>
-              <th className="arena-table-header">Article</th>
-              <th className="arena-table-header">Difficulty</th>
-              <th className="arena-table-header">Mark for Revision</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50 hover:bg-gray-50">
+              <TableHead className="w-[70px] text-center">Done</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead className="w-[110px]">Practice</TableHead>
+              <TableHead className="w-[110px]">Article</TableHead>
+              <TableHead className="w-[110px]">Difficulty</TableHead>
+              <TableHead className="w-[110px] text-center">Revision</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {topics.map(topic => (
               <React.Fragment key={topic.id}>
-                <tr className="bg-arena-lightGray cursor-pointer hover:bg-arena-gray" onClick={() => toggleTopic(topic.id)}>
-                  <td colSpan={6} className="px-4 py-3 font-medium">
+                <TableRow 
+                  className="bg-arena-lightGray cursor-pointer hover:bg-arena-gray border-t"
+                  onClick={() => toggleTopic(topic.id)}
+                >
+                  <TableCell colSpan={6} className="py-3">
                     <div className="flex items-center">
-                      <span className="mr-2">{expandedTopics[topic.id] ? '▼' : '▶'}</span>
-                      {topic.name} ({filterQuestions(topic.questions).length} questions)
+                      {expandedTopics[topic.id] ? 
+                        <ChevronDown size={18} className="text-arena-red mr-2" /> : 
+                        <ChevronRight size={18} className="text-arena-darkGray mr-2" />}
+                      <span className="font-medium text-gray-800">{topic.name}</span>
+                      <span className="ml-3 bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                        {filterQuestions(topic.questions).length} questions
+                      </span>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
+                
                 {expandedTopics[topic.id] && filterQuestions(topic.questions).map(question => (
-                  <tr key={question.id} className={`border-b border-arena-gray hover:bg-gray-50 ${question.is_completed ? 'bg-green-50' : ''}`}>
-                    <td className="px-4 py-3 text-center">
-                      <Checkbox 
-                        checked={question.is_completed} 
-                        onCheckedChange={() => toggleCompleted(topic.id, question.id)}
-                      />
-                    </td>
-                    <td className="px-4 py-3">{question.title}</td>
-                    <td className="px-4 py-3">
+                  <TableRow 
+                    key={question.id} 
+                    className={`border-t border-gray-100 hover:bg-gray-50 ${
+                      question.is_completed ? 'bg-green-50/50' : ''
+                    }`}
+                  >
+                    <TableCell className="text-center">
+                      <div className="flex justify-center">
+                        <Checkbox 
+                          checked={question.is_completed} 
+                          onCheckedChange={() => toggleCompleted(topic.id, question.id)}
+                          className={question.is_completed ? "border-green-500 data-[state=checked]:bg-green-500" : ""}
+                        />
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">{question.title}</TableCell>
+                    <TableCell>
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           handlePracticeClick(question.practice_link);
                         }}
-                        className="text-arena-red hover:underline inline-flex items-center gap-1 p-0 h-auto"
+                        className="text-arena-red hover:text-white hover:bg-arena-red inline-flex items-center gap-1 border-arena-red/30"
                       >
                         <Code size={14} />
                         Practice
                       </Button>
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       <Link 
                         to={`/articles/${question.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-arena-red hover:underline inline-flex items-center gap-1"
-                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1"
                       >
-                        <BookText size={14} />
-                        Article
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-arena-blue hover:text-white hover:bg-arena-blue inline-flex items-center gap-1 border-arena-blue/30"
+                        >
+                          <BookText size={14} />
+                          Article
+                        </Button>
                       </Link>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge className={getDifficultyClass(question.difficulty)}>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={`${getDifficultyClass(question.difficulty)} px-2.5 py-1`}>
                         {question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1)}
                       </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-center">
+                    </TableCell>
+                    <TableCell className="text-center">
                       <Button 
                         variant={question.is_marked_for_revision ? "default" : "outline"} 
                         size="sm"
@@ -363,18 +408,50 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                           e.stopPropagation();
                           toggleRevision(topic.id, question.id);
                         }}
-                        className="w-8 h-8 p-0"
+                        className={`w-8 h-8 p-0 rounded-full ${
+                          question.is_marked_for_revision 
+                            ? "bg-yellow-400 hover:bg-yellow-500" 
+                            : "hover:border-yellow-400 hover:text-yellow-500"
+                        }`}
                       >
-                        <Star size={14} className={question.is_marked_for_revision ? "text-yellow-400 fill-yellow-400" : ""} />
+                        <Star size={14} className={question.is_marked_for_revision ? "text-white fill-white" : ""} />
                       </Button>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
+                
+                {/* Empty state when filtered list is empty */}
+                {expandedTopics[topic.id] && filterQuestions(topic.questions).length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-6 text-gray-500">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="bg-gray-100 rounded-full p-3">
+                          <Filter size={18} className="text-gray-400" />
+                        </div>
+                        <p>No questions match the current filter</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
               </React.Fragment>
             ))}
-          </tbody>
-        </table>
+            
+            {/* Empty state when no topics */}
+            {topics.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-10 text-gray-500">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="bg-gray-100 rounded-full p-4">
+                      <FolderOpen size={24} className="text-gray-400" />
+                    </div>
+                    <p className="text-lg">No topics available in this learning path</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
-}
+};

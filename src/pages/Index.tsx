@@ -7,9 +7,11 @@ import { Toaster } from '@/components/ui/toaster';
 import { motion } from 'framer-motion';
 import { User } from '@/types';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Try to load user from localStorage on component mount
   useEffect(() => {
@@ -25,7 +27,42 @@ const Index = () => {
         console.error('Failed to parse saved user data', error);
       }
     }
+    setIsLoading(false);
   }, []);
+
+  // Ensure assigned learning paths are properly loaded
+  useEffect(() => {
+    const refreshUserData = async () => {
+      if (!user || !user.id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+          
+        if (error) {
+          console.error('Error refreshing user data:', error);
+          return;
+        }
+        
+        if (data) {
+          // Update user data in state and localStorage
+          const updatedUser = { ...user, ...data };
+          setUser(updatedUser);
+          localStorage.setItem('userData', JSON.stringify(updatedUser));
+          console.log('User data refreshed:', updatedUser);
+        }
+      } catch (error) {
+        console.error('Failed to refresh user data:', error);
+      }
+    };
+    
+    if (user) {
+      refreshUserData();
+    }
+  }, [user?.id]);
 
   const handleLogin = (userData: User) => {
     setUser(userData);
@@ -52,6 +89,14 @@ const Index = () => {
       description: "You have been logged out successfully.",
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="loading-spinner"></div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 

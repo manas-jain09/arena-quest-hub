@@ -1,7 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { LearningPathCard } from '@/components/LearningPathCard';
 import { QuestionTable } from '@/components/QuestionTable';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import { useLearningPaths } from '@/hooks/useLearningPaths';
@@ -79,11 +79,11 @@ export const HomePage = ({ userId }: HomePageProps) => {
               animate="show"
             >
               {filteredPaths.map((path) => (
-                <motion.div key={path.id} variants={item}>
+                <motion.div key={path.id} variants={item} className="w-full">
                   <LearningPathCard
                     title={path.title}
                     description={path.description}
-                    difficulty={path.difficulty}
+                    difficulty={path.difficulty as 'easy' | 'medium' | 'hard' | 'theory'}
                     topicsCount={path.topicsCount || 0}
                     questionsCount={path.questionsCount || 0}
                     onClick={() => handlePathSelect(path.id)}
