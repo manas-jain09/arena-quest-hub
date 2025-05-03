@@ -33,7 +33,7 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Home size={16} />
                 <span>Home</span>
               </Link>
-              <a href={`https://sabha.ikshvaku-innovations.in/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
+{/*               <a href={`https://sabha.ikshvaku-innovations.in/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
                 <MessageSquare size={16} />
                 <span>Sabha</span>
               </a>
@@ -48,7 +48,7 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
               <Button onClick={() => setSettingsOpen(true)} variant="ghost" className="arena-nav-link flex items-center gap-1">
                 <Settings size={16} />
                 <span>Settings</span>
-              </Button>
+              </Button> */}
               <Button onClick={onLogout} variant="ghost" className="arena-nav-link flex items-center gap-1">
                 <LogOut size={16} />
                 <span>Logout</span>
@@ -71,7 +71,7 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Home size={16} />
                 <span>Home</span>
               </Link>
-              <a href={`https://sabha.ikshvaku-innovations.in/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
+{/*               <a href={`https://sabha.ikshvaku-innovations.in/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
                 <MessageSquare size={16} />
                 <span>Sabha</span>
               </a>
@@ -86,7 +86,7 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
               <Button onClick={() => { setSettingsOpen(true); setMobileMenuOpen(false); }} variant="ghost" className="arena-nav-link flex items-center gap-1 py-3 justify-start">
                 <Settings size={16} />
                 <span>Settings</span>
-              </Button>
+              </Button> */}
               <Button onClick={() => { onLogout(); setMobileMenuOpen(false); }} variant="ghost" className="arena-nav-link flex items-center gap-1 py-3 justify-start">
                 <LogOut size={16} />
                 <span>Logout</span>
