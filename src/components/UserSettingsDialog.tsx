@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { 
@@ -60,6 +59,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
   const [activeTab, setActiveTab] = useState("profile");
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const [userEmail, setUserEmail] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const profileForm = useForm<ProfileFormValues>({
@@ -87,8 +87,32 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
   useEffect(() => {
     if (open && userId) {
       fetchProfileData();
+      fetchUserEmail();
     }
   }, [open, userId]);
+
+  // Fetch user email for password update
+  const fetchUserEmail = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('email')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user email:', error);
+        return;
+      }
+
+      if (data) {
+        setUserEmail(data.email);
+        console.log('Fetched user email:', data.email);
+      }
+    } catch (error) {
+      console.error('Unexpected error fetching email:', error);
+    }
+  };
 
   const fetchProfileData = async () => {
     try {
@@ -148,7 +172,9 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
           });
         
         if (uploadError) {
-          throw uploadError;
+          console.error('Error uploading file:', uploadError);
+          toast.error(`Upload failed: ${uploadError.message}`);
+          return;
         }
         
         if (uploadData) {
@@ -157,27 +183,42 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
             .getPublicUrl(fileName);
           
           profilePhotoUrl = publicUrl;
+          console.log('Photo uploaded, URL:', publicUrl);
         }
       }
       
-      const { error } = await supabase
+      // Check if profile exists first
+      const { data: existingProfile } = await supabase
         .from('profiles')
-        .upsert({
-          id: userId,
-          real_name: values.real_name,
-          cgpa: values.cgpa,
-          bio: values.bio,
-          college_name: values.college_name,
-          location: values.location,
-          linkedin_url: values.linkedin_url,
-          github_url: values.github_url,
-          leetcode_url: values.leetcode_url,
-          profile_picture_url: profilePhotoUrl,
-          updated_at: new Date().toISOString()
-        });
+        .select('id')
+        .eq('id', userId)
+        .single();
+
+      // Prepare profile data
+      const profileData = {
+        id: userId,
+        real_name: values.real_name,
+        cgpa: values.cgpa,
+        bio: values.bio,
+        college_name: values.college_name,
+        location: values.location,
+        linkedin_url: values.linkedin_url,
+        github_url: values.github_url,
+        leetcode_url: values.leetcode_url,
+        profile_picture_url: profilePhotoUrl,
+        updated_at: new Date().toISOString()
+      };
       
-      if (error) {
-        console.error('Error updating profile:', error);
+      // Insert or update profile
+      let result;
+      if (!existingProfile) {
+        result = await supabase.from('profiles').insert([profileData]);
+      } else {
+        result = await supabase.from('profiles').update(profileData).eq('id', userId);
+      }
+      
+      if (result.error) {
+        console.error('Error updating profile:', result.error);
         toast.error('Failed to update profile');
         return;
       }
@@ -202,18 +243,60 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         return;
       }
 
+      if (!userEmail) {
+        toast.error('Unable to update password: User email not found');
+        return;
+      }
+
       // First validate current password by attempting to sign in
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: '', // We need to get the user's email from somewhere
+      const { error: signInError, data: signInData } = await supabase.auth.signInWithPassword({
+        email: userEmail,
         password: values.current_password,
       });
 
       if (signInError) {
-        toast.error('Current password is incorrect');
+        console.error('Sign in error:', signInError);
+        
+        // For direct password update in users table when auth fails
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('password')
+          .eq('id', userId)
+          .single();
+          
+        if (userError) {
+          console.error('Error checking user password:', userError);
+          toast.error('Failed to verify current password');
+          return;
+        }
+        
+        if (userData.password !== values.current_password) {
+          toast.error('Current password is incorrect');
+          return;
+        }
+        
+        // Update password in users table
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ 
+            password: values.new_password,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId);
+        
+        if (updateError) {
+          console.error('Error updating password:', updateError);
+          toast.error('Failed to update password');
+          return;
+        }
+        
+        toast.success('Password updated successfully');
+        passwordForm.reset();
+        setActiveTab("profile");
         return;
       }
 
-      // Update password
+      // If auth sign in worked, update password through auth API
       const { error: updateError } = await supabase.auth.updateUser({
         password: values.new_password
       });
@@ -222,6 +305,19 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         console.error('Error updating password:', updateError);
         toast.error('Failed to update password: ' + updateError.message);
         return;
+      }
+      
+      // Also update in users table to keep in sync
+      const { error: userUpdateError } = await supabase
+        .from('users')
+        .update({ 
+          password: values.new_password,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+      
+      if (userUpdateError) {
+        console.error('Error updating user password:', userUpdateError);
       }
       
       toast.success('Password updated successfully');
@@ -241,6 +337,20 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
     }
 
     const file = e.target.files[0];
+    
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image is too large. Maximum size is 5MB.');
+      return;
+    }
+    
+    // Validate file type
+    const validTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Invalid file type. Please upload a JPEG, PNG, GIF, or WEBP image.');
+      return;
+    }
+    
     setFileToUpload(file);
     
     // Create preview
@@ -305,7 +415,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/png, image/jpeg, image/gif, image/webp"
                     className="hidden"
                     onChange={handlePhotoUpload}
                   />
