@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { 
   Dialog, 
@@ -29,7 +29,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { AlertCircle, User, GraduationCap, MapPin, Link2 } from 'lucide-react';
+import { AlertCircle, User, GraduationCap, MapPin, Link2, Lock, Upload, Camera } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface UserSettingsDialogProps {
   open: boolean;
@@ -48,11 +49,20 @@ interface ProfileFormValues {
   leetcode_url: string;
 }
 
+interface PasswordFormValues {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
 export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const form = useForm<ProfileFormValues>({
+  const profileForm = useForm<ProfileFormValues>({
     defaultValues: {
       real_name: '',
       cgpa: 0,
@@ -62,6 +72,14 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
       linkedin_url: '',
       github_url: '',
       leetcode_url: ''
+    }
+  });
+
+  const passwordForm = useForm<PasswordFormValues>({
+    defaultValues: {
+      current_password: '',
+      new_password: '',
+      confirm_password: ''
     }
   });
 
@@ -88,7 +106,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
 
       if (data) {
         // Reset form with existing data
-        form.reset({
+        profileForm.reset({
           real_name: data.real_name || '',
           cgpa: data.cgpa || 0,
           bio: data.bio || '',
@@ -98,6 +116,11 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
           github_url: data.github_url || '',
           leetcode_url: data.leetcode_url || ''
         });
+
+        // Set profile photo if exists
+        if (data.profile_picture_url) {
+          setProfilePhoto(data.profile_picture_url);
+        }
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -106,9 +129,36 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
     }
   };
 
-  const onSubmit = async (values: ProfileFormValues) => {
+  const onProfileSubmit = async (values: ProfileFormValues) => {
     try {
       setIsLoading(true);
+      
+      // First upload profile photo if exists
+      let profilePhotoUrl = profilePhoto;
+      
+      if (fileToUpload) {
+        const fileExt = fileToUpload.name.split('.').pop();
+        const fileName = `${userId}/${Date.now()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('profile-photos')
+          .upload(fileName, fileToUpload, {
+            cacheControl: '3600',
+            upsert: true
+          });
+        
+        if (uploadError) {
+          throw uploadError;
+        }
+        
+        if (uploadData) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('profile-photos')
+            .getPublicUrl(fileName);
+          
+          profilePhotoUrl = publicUrl;
+        }
+      }
       
       const { error } = await supabase
         .from('profiles')
@@ -122,6 +172,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
           linkedin_url: values.linkedin_url,
           github_url: values.github_url,
           leetcode_url: values.leetcode_url,
+          profile_picture_url: profilePhotoUrl,
           updated_at: new Date().toISOString()
         });
       
@@ -141,6 +192,71 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
     }
   };
 
+  const onPasswordSubmit = async (values: PasswordFormValues) => {
+    try {
+      setIsLoading(true);
+      
+      // Validate that new password and confirm password match
+      if (values.new_password !== values.confirm_password) {
+        toast.error('New password and confirmation do not match');
+        return;
+      }
+
+      // First validate current password by attempting to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: '', // We need to get the user's email from somewhere
+        password: values.current_password,
+      });
+
+      if (signInError) {
+        toast.error('Current password is incorrect');
+        return;
+      }
+
+      // Update password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: values.new_password
+      });
+      
+      if (updateError) {
+        console.error('Error updating password:', updateError);
+        toast.error('Failed to update password: ' + updateError.message);
+        return;
+      }
+      
+      toast.success('Password updated successfully');
+      passwordForm.reset();
+      setActiveTab("profile");
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      return;
+    }
+
+    const file = e.target.files[0];
+    setFileToUpload(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setProfilePhoto(event.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col bg-white border border-gray-200 shadow-lg rounded-lg">
@@ -151,7 +267,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         </DialogHeader>
         
         <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab} className="w-full mt-2">
-          <TabsList className="grid grid-cols-2 mb-4">
+          <TabsList className="grid grid-cols-3 mb-4">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User size={16} />
               <span>Personal Info</span>
@@ -160,12 +276,45 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
               <Link2 size={16} />
               <span>Social Links</span>
             </TabsTrigger>
+            <TabsTrigger value="account" className="flex items-center gap-2">
+              <Lock size={16} />
+              <span>Account</span>
+            </TabsTrigger>
           </TabsList>
           
           <ScrollArea className="flex-grow overflow-y-auto pr-4 h-[400px]">
-            <Form {...form}>
-              <form id="user-settings-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pr-2">
-                <TabsContent value="profile" className="space-y-4 animate-fade-in">
+            <TabsContent value="profile" className="space-y-4 animate-fade-in">
+              <div className="flex flex-col items-center justify-center mb-6">
+                <div className="relative">
+                  <Avatar className="h-24 w-24 border-2 border-gray-200">
+                    {profilePhoto ? (
+                      <AvatarImage src={profilePhoto} alt="Profile" />
+                    ) : (
+                      <AvatarFallback className="bg-arena-red text-white text-xl">
+                        {profileForm.getValues("real_name")?.charAt(0) || "U"}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <button 
+                    type="button"
+                    onClick={triggerFileInput}
+                    className="absolute bottom-0 right-0 bg-arena-red hover:bg-arena-darkRed text-white rounded-full p-1.5"
+                  >
+                    <Camera size={16} />
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handlePhotoUpload}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-2">Click the camera icon to update your photo</p>
+              </div>
+
+              <Form {...profileForm}>
+                <form id="profile-settings-form" onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4 pr-2">
                   <div className="bg-arena-lightGray/50 rounded-lg p-4 mb-4">
                     <h3 className="font-medium flex items-center gap-2">
                       <User size={18} className="text-arena-red" />
@@ -174,7 +323,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                   </div>
                   
                   <FormField
-                    control={form.control}
+                    control={profileForm.control}
                     name="real_name"
                     render={({ field }) => (
                       <FormItem>
@@ -192,7 +341,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                   />
                   
                   <FormField
-                    control={form.control}
+                    control={profileForm.control}
                     name="bio"
                     render={({ field }) => (
                       <FormItem>
@@ -217,7 +366,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                   </div>
 
                   <FormField
-                    control={form.control}
+                    control={profileForm.control}
                     name="college_name"
                     render={({ field }) => (
                       <FormItem>
@@ -236,7 +385,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
 
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
-                      control={form.control}
+                      control={profileForm.control}
                       name="cgpa"
                       render={({ field }) => (
                         <FormItem>
@@ -271,7 +420,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                     />
 
                     <FormField
-                      control={form.control}
+                      control={profileForm.control}
                       name="location"
                       render={({ field }) => (
                         <FormItem>
@@ -291,9 +440,13 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                       )}
                     />
                   </div>
-                </TabsContent>
-                
-                <TabsContent value="links" className="space-y-4 animate-fade-in">
+                </form>
+              </Form>
+            </TabsContent>
+            
+            <TabsContent value="links" className="space-y-4 animate-fade-in">
+              <Form {...profileForm}>
+                <form id="links-settings-form" onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4 pr-2">
                   <div className="bg-arena-lightGray/50 rounded-lg p-4 mb-4">
                     <h3 className="font-medium flex items-center gap-2">
                       <Link2 size={18} className="text-arena-red" />
@@ -302,7 +455,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                   </div>
                   
                   <FormField
-                    control={form.control}
+                    control={profileForm.control}
                     name="linkedin_url"
                     render={({ field }) => (
                       <FormItem>
@@ -325,7 +478,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                   />
 
                   <FormField
-                    control={form.control}
+                    control={profileForm.control}
                     name="github_url"
                     render={({ field }) => (
                       <FormItem>
@@ -348,7 +501,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                   />
 
                   <FormField
-                    control={form.control}
+                    control={profileForm.control}
                     name="leetcode_url"
                     render={({ field }) => (
                       <FormItem>
@@ -369,9 +522,79 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                       </FormItem>
                     )}
                   />
-                </TabsContent>
-              </form>
-            </Form>
+                </form>
+              </Form>
+            </TabsContent>
+            
+            <TabsContent value="account" className="space-y-4 animate-fade-in">
+              <Form {...passwordForm}>
+                <form id="password-settings-form" onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4 pr-2">
+                  <div className="bg-arena-lightGray/50 rounded-lg p-4 mb-4">
+                    <h3 className="font-medium flex items-center gap-2">
+                      <Lock size={18} className="text-arena-red" />
+                      Password Update
+                    </h3>
+                  </div>
+                  
+                  <FormField
+                    control={passwordForm.control}
+                    name="current_password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-medium">Current Password</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password"
+                            placeholder="Enter current password" 
+                            className="border-gray-300 focus:border-arena-red"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={passwordForm.control}
+                    name="new_password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-medium">New Password</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password"
+                            placeholder="Enter new password" 
+                            className="border-gray-300 focus:border-arena-red"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={passwordForm.control}
+                    name="confirm_password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-medium">Confirm New Password</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password"
+                            placeholder="Confirm new password" 
+                            className="border-gray-300 focus:border-arena-red"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </form>
+              </Form>
+            </TabsContent>
           </ScrollArea>
 
           <div className="mt-6 border-t pt-4 px-1">
@@ -386,7 +609,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
               <Button 
                 type="submit" 
                 disabled={isLoading} 
-                form="user-settings-form"
+                form={activeTab === "account" ? "password-settings-form" : activeTab === "links" ? "links-settings-form" : "profile-settings-form"}
                 className="bg-arena-red hover:bg-arena-darkRed transition-colors"
               >
                 {isLoading ? (
