@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -47,6 +46,11 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
   const [filterStatus, setFilterStatus] = useState<'all' | 'solved' | 'unsolved' | 'revision'>('all');
   const [showFilter, setShowFilter] = useState(false);
   const { toast } = useToast();
+
+  // Check if this learning path is a theory learning path
+  const isTheoryPath = learningPathTitle.toLowerCase().includes('theory') || 
+                      initialTopics.some(topic => 
+                        topic.questions.some(question => question.difficulty === 'theory'));
 
   const getPRN = async () => {
     try {
@@ -234,6 +238,8 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
     ? Math.round((completedQuestions / totalQuestions) * 100) 
     : 0;
 
+  const showPracticeColumn = !isTheoryPath;
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       {/* Header */}
@@ -321,7 +327,9 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
             <TableRow className="bg-gray-50 hover:bg-gray-50">
               <TableHead className="w-[70px] text-center">Done</TableHead>
               <TableHead>Title</TableHead>
-              <TableHead className="w-[110px]">Practice</TableHead>
+              {showPracticeColumn && (
+                <TableHead className="w-[110px]">Practice</TableHead>
+              )}
               <TableHead className="w-[110px]">Article</TableHead>
               <TableHead className="w-[110px]">Difficulty</TableHead>
               <TableHead className="w-[110px] text-center">Revision</TableHead>
@@ -334,7 +342,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                   className="bg-arena-lightGray cursor-pointer hover:bg-arena-gray border-t"
                   onClick={() => toggleTopic(topic.id)}
                 >
-                  <TableCell colSpan={6} className="py-3">
+                  <TableCell colSpan={showPracticeColumn ? 6 : 5} className="py-3">
                     <div className="flex items-center">
                       {expandedTopics[topic.id] ? 
                         <ChevronDown size={18} className="text-arena-red mr-2" /> : 
@@ -364,20 +372,22 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">{question.title}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePracticeClick(question.practice_link);
-                        }}
-                        className="text-arena-red hover:text-white hover:bg-arena-red inline-flex items-center gap-1 border-arena-red/30"
-                      >
-                        <Code size={14} />
-                        Practice
-                      </Button>
-                    </TableCell>
+                    {showPracticeColumn && (
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePracticeClick(question.practice_link);
+                          }}
+                          className="text-arena-red hover:text-white hover:bg-arena-red inline-flex items-center gap-1 border-arena-red/30"
+                        >
+                          <Code size={14} />
+                          Practice
+                        </Button>
+                      </TableCell>
+                    )}
                     <TableCell>
                       <Link 
                         to={`/articles/${question.id}`}
@@ -423,7 +433,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                 {/* Empty state when filtered list is empty */}
                 {expandedTopics[topic.id] && filterQuestions(topic.questions).length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-6 text-gray-500">
+                    <TableCell colSpan={showPracticeColumn ? 6 : 5} className="text-center py-6 text-gray-500">
                       <div className="flex flex-col items-center gap-2">
                         <div className="bg-gray-100 rounded-full p-3">
                           <Filter size={18} className="text-gray-400" />
@@ -439,7 +449,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
             {/* Empty state when no topics */}
             {topics.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-10 text-gray-500">
+                <TableCell colSpan={showPracticeColumn ? 6 : 5} className="text-center py-10 text-gray-500">
                   <div className="flex flex-col items-center gap-3">
                     <div className="bg-gray-100 rounded-full p-4">
                       <FolderOpen size={24} className="text-gray-400" />

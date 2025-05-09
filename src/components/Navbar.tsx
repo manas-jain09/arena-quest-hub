@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, LogOut, Menu, Settings, User, X, Bot, MessageSquare } from 'lucide-react';
+import { Home, LogOut, Menu, Settings, User, X } from 'lucide-react';
 import { useState } from 'react';
 import { UserSettingsDialog } from './UserSettingsDialog';
 
@@ -33,14 +33,6 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Home size={16} />
                 <span>Home</span>
               </Link>
-              <a href={`https://sabha.ikshvaku-innovations.in/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
-                <MessageSquare size={16} />
-                <span>Sabha</span>
-              </a>
-              <a href={`https://yukti.ikshvaku-innovations.in/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
-                <Bot size={16} />
-                <span>Yukti</span>
-              </a>
               <a href={`https://yodha.ikshvaku-innovations.in/profile/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1">
                 <User size={16} />
                 <span>Yodha</span>
@@ -71,14 +63,6 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Home size={16} />
                 <span>Home</span>
               </Link>
-              <a href={`https://sabha.ikshvaku-innovations.in/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
-                <MessageSquare size={16} />
-                <span>Sabha</span>
-              </a>
-              <a href={`https://yukti.ikshvaku-innovations.in/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
-                <Bot size={16} />
-                <span>Yukti</span>
-              </a>
               <a href={`https://yodha.ikshvaku-innovations.in/profile/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
                 <User size={16} />
                 <span>Yodha</span>
