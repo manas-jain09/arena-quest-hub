@@ -396,7 +396,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
             <TabsContent value="profile" className="space-y-4 animate-fade-in">
               <div className="flex flex-col items-center justify-center mb-6">
                 <div className="relative">
-                  <Avatar className="h-24 w-24 border-2 border-gray-200">
+{/*                   <Avatar className="h-24 w-24 border-2 border-gray-200">
                     {profilePhoto ? (
                       <AvatarImage src={profilePhoto} alt="Profile" />
                     ) : (
@@ -418,7 +418,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                     accept="image/png, image/jpeg, image/gif, image/webp"
                     className="hidden"
                     onChange={handlePhotoUpload}
-                  />
+                  /> */}
                 </div>
                 <p className="text-xs text-gray-500 mt-2">Click the camera icon to update your photo</p>
               </div>
