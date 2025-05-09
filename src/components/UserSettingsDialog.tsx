@@ -54,6 +54,33 @@ interface PasswordFormValues {
   confirm_password: string;
 }
 
+// Helper function to implement manual retry logic for uploads
+async function uploadWithRetry(bucket: string, path: string, file: File, options = {}) {
+  const maxRetries = 3;
+  let attempt = 0;
+  
+  while (attempt < maxRetries) {
+    try {
+      const { data, error } = await supabase.storage.from(bucket).upload(path, file, options);
+      if (error) {
+        console.error('Upload attempt failed:', error);
+        if (error.message.includes('authentication') || error.message.includes('JWT')) {
+          toast.error('Authentication required for upload. Please ensure you are logged in.');
+          return { data: null, error };
+        }
+        throw error;
+      }
+      return { data, error: null };
+    } catch (error: any) {
+      attempt++;
+      console.log(`Upload attempt ${attempt} failed. Retrying...`);
+      if (attempt >= maxRetries) return { data: null, error };
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retrying
+    }
+  }
+  return { data: null, error: new Error('Max retry attempts reached') };
+}
+
 export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
@@ -165,29 +192,41 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         const fileExt = fileToUpload.name.split('.').pop();
         const fileName = `${userId}/${Date.now()}.${fileExt}`;
         
-        // Get current user session to ensure we're authenticated
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (!sessionData.session) {
-          toast.error('Authentication required to upload profile photo');
+        // First check if we have a valid session
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !sessionData.session) {
+          console.error('No valid session found:', sessionError);
+          toast.error('Authentication required to upload profile photo. Please log in again.');
+          setIsLoading(false);
           return;
         }
         
-        // Upload file to the profile-photos bucket with explicit metadata
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('profile-photos')
-          .upload(fileName, fileToUpload, {
+        console.log('Session found, proceeding with upload');
+        
+        // Create profiles-photos bucket if it doesn't exist
+        // Note: This requires admin rights so we'll assume the bucket is created
+        
+        // Upload file using our retry function
+        const { data: uploadData, error: uploadError } = await uploadWithRetry(
+          'profile-photos', 
+          fileName, 
+          fileToUpload, 
+          {
             cacheControl: '3600',
             upsert: true,
             contentType: fileToUpload.type
-          });
+          }
+        );
         
         if (uploadError) {
           console.error('Error uploading file:', uploadError);
-          toast.error(`Upload failed: ${uploadError.message}`);
+          toast.error(`Upload failed: ${uploadError.message || 'Unknown error'}`);
+          setIsLoading(false);
           return;
         }
         
-        if (uploadData) {
+        if (uploadData?.path) {
           const { data: { publicUrl } } = supabase.storage
             .from('profile-photos')
             .getPublicUrl(fileName);
