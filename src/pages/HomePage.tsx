@@ -79,7 +79,7 @@ export const HomePage = ({ userId }: HomePageProps) => {
           
           {filteredPaths.length > 0 ? (
             <>
-              <p className="text-gray-600 mb-6">Total paths available: {filteredPaths.length}</p>
+{/*               <p className="text-gray-600 mb-6">Total paths available: {filteredPaths.length}</p> */}
               <motion.div 
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                 variants={container}
