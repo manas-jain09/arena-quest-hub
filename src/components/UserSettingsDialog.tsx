@@ -29,7 +29,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { AlertCircle, User, GraduationCap, MapPin, Link2, Lock, Upload, Camera } from 'lucide-react';
+import { AlertCircle, User, GraduationCap, MapPin, Link2, Lock, Camera } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface UserSettingsDialogProps {
@@ -165,7 +165,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         const fileExt = fileToUpload.name.split('.').pop();
         const fileName = `${userId}/${Date.now()}.${fileExt}`;
         
-        // Add user ID to upload options to pass RLS policy
+        // Upload file to the profile-photos bucket
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('profile-photos')
           .upload(fileName, fileToUpload, {
@@ -194,7 +194,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         .from('profiles')
         .select('id')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       // Prepare profile data
       const profileData = {
@@ -653,7 +653,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
           </ScrollArea>
 
           <div className="mt-6 border-t pt-4 px-1">
-            <DialogFooter className="flex flex-col-reverse sm:flex-row justify-between w-full gap-2">
+            <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end w-full gap-2">
               <Button 
                 variant="outline" 
                 onClick={() => onOpenChange(false)}
