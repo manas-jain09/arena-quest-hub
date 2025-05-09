@@ -17,8 +17,25 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   }
 });
 
-// Configure storage API with retry options - this is the correct way to handle uploads
-// instead of in the client options
-const { storage } = supabase;
-storage.setRetryAttempts(3);
-storage.setRetryInterval(1000);
+// Note: The Supabase JS client doesn't provide direct methods to configure 
+// retry parameters on the storage client. If you need retry functionality,
+// you would need to implement it manually in your upload functions.
+// 
+// Example of manual retry implementation for file uploads:
+// 
+// export async function uploadWithRetry(bucket: string, path: string, file: File, options = {}) {
+//   const maxRetries = 3;
+//   let attempt = 0;
+//   
+//   while (attempt < maxRetries) {
+//     try {
+//       const { data, error } = await supabase.storage.from(bucket).upload(path, file, options);
+//       if (error) throw error;
+//       return { data, error: null };
+//     } catch (error) {
+//       attempt++;
+//       if (attempt >= maxRetries) return { data: null, error };
+//       await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retrying
+//     }
+//   }
+// }
