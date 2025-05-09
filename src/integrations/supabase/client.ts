@@ -14,11 +14,11 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     headers: {
       'X-Client-Info': 'astra-app'
     }
-  },
-  // Add more detailed options for storage
-  storage: {
-    // Set retry options for better handling of upload failures
-    retryAttempts: 3,
-    retryInterval: 1000
   }
 });
+
+// Configure storage API with retry options - this is the correct way to handle uploads
+// instead of in the client options
+const { storage } = supabase;
+storage.setRetryAttempts(3);
+storage.setRetryInterval(1000);
