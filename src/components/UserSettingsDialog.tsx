@@ -420,7 +420,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                     onChange={handlePhotoUpload}
                   /> */}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Click the camera icon to update your photo</p>
+{/*                 <p className="text-xs text-gray-500 mt-2">Click the camera icon to update your photo</p> */}
               </div>
 
               <Form {...profileForm}>
