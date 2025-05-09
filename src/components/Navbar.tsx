@@ -33,6 +33,10 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Home size={16} />
                 <span>Home</span>
               </Link>
+              <a href={`https://yodha.ikshvaku-innovations.in/profile/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1">
+                <User size={16} />
+                <span>Yodha</span>
+              </a>
               <Button onClick={() => setSettingsOpen(true)} variant="ghost" className="arena-nav-link flex items-center gap-1">
                 <Settings size={16} />
                 <span>Settings</span>
@@ -59,6 +63,10 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Home size={16} />
                 <span>Home</span>
               </Link>
+              <a href={`https://yodha.ikshvaku-innovations.in/profile/${localStorage.getItem('userId') || ''}`} target="_blank" rel="noopener noreferrer" className="arena-nav-link flex items-center gap-1 py-3" onClick={() => setMobileMenuOpen(false)}>
+                <User size={16} />
+                <span>Yodha</span>
+              </a>
               <Button onClick={() => { setSettingsOpen(true); setMobileMenuOpen(false); }} variant="ghost" className="arena-nav-link flex items-center gap-1 py-3 justify-start">
                 <Settings size={16} />
                 <span>Settings</span>

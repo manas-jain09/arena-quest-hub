@@ -28,7 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { AlertCircle, User, GraduationCap, MapPin, Link2, Lock, Camera } from 'lucide-react';
+import { AlertCircle, User, GraduationCap, MapPin, Link2, Lock, Upload, Camera } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface UserSettingsDialogProps {
@@ -52,33 +52,6 @@ interface PasswordFormValues {
   current_password: string;
   new_password: string;
   confirm_password: string;
-}
-
-// Helper function to implement manual retry logic for uploads
-async function uploadWithRetry(bucket: string, path: string, file: File, options = {}) {
-  const maxRetries = 3;
-  let attempt = 0;
-  
-  while (attempt < maxRetries) {
-    try {
-      const { data, error } = await supabase.storage.from(bucket).upload(path, file, options);
-      if (error) {
-        console.error('Upload attempt failed:', error);
-        if (error.message.includes('authentication') || error.message.includes('JWT')) {
-          toast.error('Authentication required for upload. Please ensure you are logged in.');
-          return { data: null, error };
-        }
-        throw error;
-      }
-      return { data, error: null };
-    } catch (error: any) {
-      attempt++;
-      console.log(`Upload attempt ${attempt} failed. Retrying...`);
-      if (attempt >= maxRetries) return { data: null, error };
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retrying
-    }
-  }
-  return { data: null, error: new Error('Max retry attempts reached') };
 }
 
 export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsDialogProps) {
@@ -188,45 +161,23 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
       let profilePhotoUrl = profilePhoto;
       
       if (fileToUpload) {
-        console.log('Uploading profile photo...');
         const fileExt = fileToUpload.name.split('.').pop();
         const fileName = `${userId}/${Date.now()}.${fileExt}`;
         
-        // First check if we have a valid session
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError || !sessionData.session) {
-          console.error('No valid session found:', sessionError);
-          toast.error('Authentication required to upload profile photo. Please log in again.');
-          setIsLoading(false);
-          return;
-        }
-        
-        console.log('Session found, proceeding with upload');
-        
-        // Create profiles-photos bucket if it doesn't exist
-        // Note: This requires admin rights so we'll assume the bucket is created
-        
-        // Upload file using our retry function
-        const { data: uploadData, error: uploadError } = await uploadWithRetry(
-          'profile-photos', 
-          fileName, 
-          fileToUpload, 
-          {
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('profile-photos')
+          .upload(fileName, fileToUpload, {
             cacheControl: '3600',
-            upsert: true,
-            contentType: fileToUpload.type
-          }
-        );
+            upsert: true
+          });
         
         if (uploadError) {
           console.error('Error uploading file:', uploadError);
-          toast.error(`Upload failed: ${uploadError.message || 'Unknown error'}`);
-          setIsLoading(false);
+          toast.error(`Upload failed: ${uploadError.message}`);
           return;
         }
         
-        if (uploadData?.path) {
+        if (uploadData) {
           const { data: { publicUrl } } = supabase.storage
             .from('profile-photos')
             .getPublicUrl(fileName);
@@ -241,7 +192,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         .from('profiles')
         .select('id')
         .eq('id', userId)
-        .maybeSingle();
+        .single();
 
       // Prepare profile data
       const profileData = {
@@ -258,8 +209,6 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         updated_at: new Date().toISOString()
       };
       
-      console.log('Saving profile data:', profileData);
-      
       // Insert or update profile
       let result;
       if (!existingProfile) {
@@ -270,15 +219,15 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
       
       if (result.error) {
         console.error('Error updating profile:', result.error);
-        toast.error(`Failed to update profile: ${result.error.message}`);
+        toast.error('Failed to update profile');
         return;
       }
       
       toast.success('Profile updated successfully');
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Unexpected error:', error);
-      toast.error(`An unexpected error occurred: ${error.message || 'Unknown error'}`);
+      toast.error('An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -299,8 +248,67 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         return;
       }
 
-      // Update password directly in users table
-      const { error: updateError } = await supabase
+      // First validate current password by attempting to sign in
+      const { error: signInError, data: signInData } = await supabase.auth.signInWithPassword({
+        email: userEmail,
+        password: values.current_password,
+      });
+
+      if (signInError) {
+        console.error('Sign in error:', signInError);
+        
+        // For direct password update in users table when auth fails
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('password')
+          .eq('id', userId)
+          .single();
+          
+        if (userError) {
+          console.error('Error checking user password:', userError);
+          toast.error('Failed to verify current password');
+          return;
+        }
+        
+        if (userData.password !== values.current_password) {
+          toast.error('Current password is incorrect');
+          return;
+        }
+        
+        // Update password in users table
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ 
+            password: values.new_password,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId);
+        
+        if (updateError) {
+          console.error('Error updating password:', updateError);
+          toast.error('Failed to update password');
+          return;
+        }
+        
+        toast.success('Password updated successfully');
+        passwordForm.reset();
+        setActiveTab("profile");
+        return;
+      }
+
+      // If auth sign in worked, update password through auth API
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: values.new_password
+      });
+      
+      if (updateError) {
+        console.error('Error updating password:', updateError);
+        toast.error('Failed to update password: ' + updateError.message);
+        return;
+      }
+      
+      // Also update in users table to keep in sync
+      const { error: userUpdateError } = await supabase
         .from('users')
         .update({ 
           password: values.new_password,
@@ -308,10 +316,8 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         })
         .eq('id', userId);
       
-      if (updateError) {
-        console.error('Error updating password:', updateError);
-        toast.error('Failed to update password');
-        return;
+      if (userUpdateError) {
+        console.error('Error updating user password:', userUpdateError);
       }
       
       toast.success('Password updated successfully');
@@ -346,7 +352,6 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
     }
     
     setFileToUpload(file);
-    console.log('File selected for upload:', file.name, file.size, file.type);
     
     // Create preview
     const reader = new FileReader();
@@ -703,11 +708,11 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
           </ScrollArea>
 
           <div className="mt-6 border-t pt-4 px-1">
-            <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end w-full gap-2">
+            <DialogFooter className="flex flex-row justify-between w-full gap-2">
               <Button 
                 variant="outline" 
                 onClick={() => onOpenChange(false)}
-                className="border-gray-300 hover:bg-gray-100 w-full sm:w-auto"
+                className="border-gray-300 hover:bg-gray-100"
               >
                 Cancel
               </Button>
@@ -715,7 +720,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                 type="submit" 
                 disabled={isLoading} 
                 form={activeTab === "account" ? "password-settings-form" : activeTab === "links" ? "links-settings-form" : "profile-settings-form"}
-                className="bg-arena-red hover:bg-arena-darkRed transition-colors w-full sm:w-auto"
+                className="bg-arena-red hover:bg-arena-darkRed transition-colors"
               >
                 {isLoading ? (
                   <>

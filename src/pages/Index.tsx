@@ -23,18 +23,6 @@ const Index = () => {
         const userData = JSON.parse(savedUserData);
         setUser(userData);
         console.log('User restored from localStorage:', userData);
-        
-        // Initialize supabase session from stored auth data
-        const savedAuthData = localStorage.getItem('supabase.auth.token');
-        console.log('Checking for saved auth data');
-        
-        // Check if session exists in Supabase auth
-        const checkSession = async () => {
-          const { data } = await supabase.auth.getSession();
-          console.log('Current session state:', data);
-        };
-        checkSession();
-        
       } catch (error) {
         console.error('Failed to parse saved user data', error);
       }
@@ -76,40 +64,7 @@ const Index = () => {
     }
   }, [user?.id]);
 
-  const handleLogin = async (userData: User) => {
-    try {
-      // Let's also try to set up an auth session
-      const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
-        email: userData.email || '', 
-        password: 'placeholder-password' // This is just a placeholder as we're using custom auth
-      });
-      
-      if (sessionError) {
-        console.log('Could not create auth session, profile operations may be limited:', sessionError);
-        
-        // Try to manually sign up the user in auth if they don't exist
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: userData.email || '',
-          password: 'placeholder-password',
-          options: {
-            data: {
-              user_id: userData.id
-            }
-          }
-        });
-        
-        if (signUpError) {
-          console.log('Could not create auth account:', signUpError);
-        } else {
-          console.log('Created auth account:', signUpData);
-        }
-      } else {
-        console.log('Auth session created:', sessionData);
-      }
-    } catch (authError) {
-      console.error('Auth setup error:', authError);
-    }
-    
+  const handleLogin = (userData: User) => {
     setUser(userData);
     // Store full user data in localStorage
     localStorage.setItem('userId', userData.id);
@@ -123,15 +78,7 @@ const Index = () => {
     console.log('User logged in:', userData);
   };
 
-  const handleLogout = async () => {
-    // Sign out of Supabase auth if an auth session exists
-    try {
-      await supabase.auth.signOut();
-      console.log('Signed out of Supabase auth');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-    
+  const handleLogout = () => {
     setUser(null);
     // Clear user data from localStorage on logout
     localStorage.removeItem('userId');
