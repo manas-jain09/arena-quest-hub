@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { 
@@ -162,15 +161,24 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
       let profilePhotoUrl = profilePhoto;
       
       if (fileToUpload) {
+        console.log('Uploading profile photo...');
         const fileExt = fileToUpload.name.split('.').pop();
         const fileName = `${userId}/${Date.now()}.${fileExt}`;
         
-        // Upload file to the profile-photos bucket
+        // Get current user session to ensure we're authenticated
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData.session) {
+          toast.error('Authentication required to upload profile photo');
+          return;
+        }
+        
+        // Upload file to the profile-photos bucket with explicit metadata
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('profile-photos')
           .upload(fileName, fileToUpload, {
             cacheControl: '3600',
-            upsert: true
+            upsert: true,
+            contentType: fileToUpload.type
           });
         
         if (uploadError) {
@@ -211,6 +219,8 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         updated_at: new Date().toISOString()
       };
       
+      console.log('Saving profile data:', profileData);
+      
       // Insert or update profile
       let result;
       if (!existingProfile) {
@@ -221,15 +231,15 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
       
       if (result.error) {
         console.error('Error updating profile:', result.error);
-        toast.error('Failed to update profile');
+        toast.error(`Failed to update profile: ${result.error.message}`);
         return;
       }
       
       toast.success('Profile updated successfully');
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Unexpected error:', error);
-      toast.error('An unexpected error occurred');
+      toast.error(`An unexpected error occurred: ${error.message || 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
@@ -297,6 +307,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
     }
     
     setFileToUpload(file);
+    console.log('File selected for upload:', file.name, file.size, file.type);
     
     // Create preview
     const reader = new FileReader();

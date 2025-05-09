@@ -14,5 +14,11 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     headers: {
       'X-Client-Info': 'astra-app'
     }
+  },
+  // Add more detailed options for storage
+  storage: {
+    // Set retry options for better handling of upload failures
+    retryAttempts: 3,
+    retryInterval: 1000
   }
 });
