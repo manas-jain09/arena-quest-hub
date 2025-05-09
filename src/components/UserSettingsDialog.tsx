@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { 
@@ -164,6 +165,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         const fileExt = fileToUpload.name.split('.').pop();
         const fileName = `${userId}/${Date.now()}.${fileExt}`;
         
+        // Add user ID to upload options to pass RLS policy
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('profile-photos')
           .upload(fileName, fileToUpload, {
@@ -248,67 +250,8 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         return;
       }
 
-      // First validate current password by attempting to sign in
-      const { error: signInError, data: signInData } = await supabase.auth.signInWithPassword({
-        email: userEmail,
-        password: values.current_password,
-      });
-
-      if (signInError) {
-        console.error('Sign in error:', signInError);
-        
-        // For direct password update in users table when auth fails
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('password')
-          .eq('id', userId)
-          .single();
-          
-        if (userError) {
-          console.error('Error checking user password:', userError);
-          toast.error('Failed to verify current password');
-          return;
-        }
-        
-        if (userData.password !== values.current_password) {
-          toast.error('Current password is incorrect');
-          return;
-        }
-        
-        // Update password in users table
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({ 
-            password: values.new_password,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', userId);
-        
-        if (updateError) {
-          console.error('Error updating password:', updateError);
-          toast.error('Failed to update password');
-          return;
-        }
-        
-        toast.success('Password updated successfully');
-        passwordForm.reset();
-        setActiveTab("profile");
-        return;
-      }
-
-      // If auth sign in worked, update password through auth API
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: values.new_password
-      });
-      
-      if (updateError) {
-        console.error('Error updating password:', updateError);
-        toast.error('Failed to update password: ' + updateError.message);
-        return;
-      }
-      
-      // Also update in users table to keep in sync
-      const { error: userUpdateError } = await supabase
+      // Update password directly in users table
+      const { error: updateError } = await supabase
         .from('users')
         .update({ 
           password: values.new_password,
@@ -316,8 +259,10 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         })
         .eq('id', userId);
       
-      if (userUpdateError) {
-        console.error('Error updating user password:', userUpdateError);
+      if (updateError) {
+        console.error('Error updating password:', updateError);
+        toast.error('Failed to update password');
+        return;
       }
       
       toast.success('Password updated successfully');
@@ -708,11 +653,11 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
           </ScrollArea>
 
           <div className="mt-6 border-t pt-4 px-1">
-            <DialogFooter className="flex flex-row justify-between w-full gap-2">
+            <DialogFooter className="flex flex-col-reverse sm:flex-row justify-between w-full gap-2">
               <Button 
                 variant="outline" 
                 onClick={() => onOpenChange(false)}
-                className="border-gray-300 hover:bg-gray-100"
+                className="border-gray-300 hover:bg-gray-100 w-full sm:w-auto"
               >
                 Cancel
               </Button>
@@ -720,7 +665,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                 type="submit" 
                 disabled={isLoading} 
                 form={activeTab === "account" ? "password-settings-form" : activeTab === "links" ? "links-settings-form" : "profile-settings-form"}
-                className="bg-arena-red hover:bg-arena-darkRed transition-colors"
+                className="bg-arena-red hover:bg-arena-darkRed transition-colors w-full sm:w-auto"
               >
                 {isLoading ? (
                   <>

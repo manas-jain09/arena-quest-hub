@@ -9,5 +9,10 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     persistSession: true,
     autoRefreshToken: true,
     storage: localStorage
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'astra-app'
+    }
   }
 });
