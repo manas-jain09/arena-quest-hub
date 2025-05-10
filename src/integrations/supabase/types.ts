@@ -267,7 +267,9 @@ export type Database = {
           cgpa: number | null
           college_name: string | null
           created_at: string
+          gfg_url: string | null
           github_url: string | null
+          hackerrank_url: string | null
           id: string
           leetcode_url: string | null
           linkedin_url: string | null
@@ -281,7 +283,9 @@ export type Database = {
           cgpa?: number | null
           college_name?: string | null
           created_at?: string
+          gfg_url?: string | null
           github_url?: string | null
+          hackerrank_url?: string | null
           id: string
           leetcode_url?: string | null
           linkedin_url?: string | null
@@ -295,7 +299,9 @@ export type Database = {
           cgpa?: number | null
           college_name?: string | null
           created_at?: string
+          gfg_url?: string | null
           github_url?: string | null
+          hackerrank_url?: string | null
           id?: string
           leetcode_url?: string | null
           linkedin_url?: string | null
