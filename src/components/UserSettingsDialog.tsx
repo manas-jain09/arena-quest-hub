@@ -28,8 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { AlertCircle, User, GraduationCap, MapPin, Link2, Lock, Upload, Camera } from 'lucide-react';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { AlertCircle, User, GraduationCap, MapPin, Link2, Lock } from 'lucide-react';
 
 interface UserSettingsDialogProps {
   open: boolean;
@@ -59,10 +58,7 @@ interface PasswordFormValues {
 export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
-  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
   const [userEmail, setUserEmail] = useState<string>('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const profileForm = useForm<ProfileFormValues>({
     defaultValues: {
@@ -146,11 +142,6 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
           hackerrank_url: data.hackerrank_url || '',
           gfg_url: data.gfg_url || ''
         });
-
-        // Set profile photo if exists
-        if (data.profile_picture_url) {
-          setProfilePhoto(data.profile_picture_url);
-        }
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -162,36 +153,6 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
   const onProfileSubmit = async (values: ProfileFormValues) => {
     try {
       setIsLoading(true);
-      
-      // First upload profile photo if exists
-      let profilePhotoUrl = profilePhoto;
-      
-      if (fileToUpload) {
-        const fileExt = fileToUpload.name.split('.').pop();
-        const fileName = `${userId}/${Date.now()}.${fileExt}`;
-        
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('profile-photos')
-          .upload(fileName, fileToUpload, {
-            cacheControl: '3600',
-            upsert: true
-          });
-        
-        if (uploadError) {
-          console.error('Error uploading file:', uploadError);
-          toast.error(`Upload failed: ${uploadError.message}`);
-          return;
-        }
-        
-        if (uploadData) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('profile-photos')
-            .getPublicUrl(fileName);
-          
-          profilePhotoUrl = publicUrl;
-          console.log('Photo uploaded, URL:', publicUrl);
-        }
-      }
       
       // Check if profile exists first
       const { data: existingProfile } = await supabase
@@ -213,7 +174,6 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         leetcode_url: values.leetcode_url,
         hackerrank_url: values.hackerrank_url,
         gfg_url: values.gfg_url,
-        profile_picture_url: profilePhotoUrl,
         updated_at: new Date().toISOString()
       };
       
@@ -339,42 +299,6 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
     }
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) {
-      return;
-    }
-
-    const file = e.target.files[0];
-    
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image is too large. Maximum size is 5MB.');
-      return;
-    }
-    
-    // Validate file type
-    const validTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      toast.error('Invalid file type. Please upload a JPEG, PNG, GIF, or WEBP image.');
-      return;
-    }
-    
-    setFileToUpload(file);
-    
-    // Create preview
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setProfilePhoto(event.target.result as string);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col bg-white border border-gray-200 shadow-lg rounded-lg">
@@ -402,35 +326,6 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
           
           <ScrollArea className="flex-grow overflow-y-auto pr-4 h-[400px]">
             <TabsContent value="profile" className="space-y-4 animate-fade-in">
-              <div className="flex flex-col items-center justify-center mb-6">
-                <div className="relative">
-                  <Avatar className="h-24 w-24 border-2 border-gray-200">
-                    {profilePhoto ? (
-                      <AvatarImage src={profilePhoto} alt="Profile" />
-                    ) : (
-                      <AvatarFallback className="bg-arena-red text-white text-xl">
-                        {profileForm.getValues("real_name")?.charAt(0) || "U"}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <button 
-                    type="button"
-                    onClick={triggerFileInput}
-                    className="absolute bottom-0 right-0 bg-arena-red hover:bg-arena-darkRed text-white rounded-full p-1.5"
-                  >
-                    <Camera size={16} />
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/png, image/jpeg, image/gif, image/webp"
-                    className="hidden"
-                    onChange={handlePhotoUpload}
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-2">Click the camera icon to update your photo</p>
-              </div>
-
               <Form {...profileForm}>
                 <form id="profile-settings-form" onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4 pr-2">
                   <div className="bg-arena-lightGray/50 rounded-lg p-4 mb-4">
@@ -641,7 +536,6 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                     )}
                   />
                   
-                  {/* Add HackerRank URL input */}
                   <FormField
                     control={profileForm.control}
                     name="hackerrank_url"
@@ -665,7 +559,6 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                     )}
                   />
                   
-                  {/* Add GeeksforGeeks URL input */}
                   <FormField
                     control={profileForm.control}
                     name="gfg_url"
