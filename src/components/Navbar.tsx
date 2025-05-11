@@ -1,5 +1,5 @@
 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Home, LogOut, Menu, Settings, User, X } from 'lucide-react';
 import { useState } from 'react';
@@ -10,11 +10,17 @@ interface NavbarProps {
 }
 
 export const Navbar = ({ onLogout }: NavbarProps) => {
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const handleLogout = () => {
+    onLogout();
+    navigate('/');
   };
 
   return (
@@ -41,7 +47,7 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Settings size={16} />
                 <span>Settings</span>
               </Button>
-              <Button onClick={onLogout} variant="ghost" className="arena-nav-link flex items-center gap-1">
+              <Button onClick={handleLogout} variant="ghost" className="arena-nav-link flex items-center gap-1">
                 <LogOut size={16} />
                 <span>Logout</span>
               </Button>
@@ -71,7 +77,7 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Settings size={16} />
                 <span>Settings</span>
               </Button>
-              <Button onClick={() => { onLogout(); setMobileMenuOpen(false); }} variant="ghost" className="arena-nav-link flex items-center gap-1 py-3 justify-start">
+              <Button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} variant="ghost" className="arena-nav-link flex items-center gap-1 py-3 justify-start">
                 <LogOut size={16} />
                 <span>Logout</span>
               </Button>

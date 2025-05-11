@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, Code } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 // Animation variants
 const containerVariants = {
@@ -23,6 +23,7 @@ const itemVariants = {
 };
 
 const LandingPage = () => {
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Handle scroll event for navbar styling
@@ -41,21 +42,24 @@ const LandingPage = () => {
     };
   }, []);
 
+  const handleLoginClick = () => {
+    navigate('/login');
+  };
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-white">
       {/* Minimalist navbar */}
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-3' : 'bg-transparent py-5'}`}>
         <div className="container mx-auto flex justify-between items-center px-4 md:px-8">
-          <div className="flex items-center">
+          <div className="flex-grow"></div>
+          <div className="flex items-center justify-center flex-grow">
             <img src="/Astra.png" alt="Astra Logo" className="h-10 w-10" />
             <h1 className={`font-bold text-xl md:text-2xl ml-2 ${isScrolled ? 'text-arena-darkGray' : 'text-arena-darkGray'}`}>Astra</h1>
           </div>
-          <div>
-            <Link to="/login">
-              <Button className="bg-arena-red hover:bg-arena-darkRed">
-                Login
-              </Button>
-            </Link>
+          <div className="flex-grow flex justify-end">
+            <Button onClick={handleLoginClick} className="bg-arena-red hover:bg-arena-darkRed">
+              Login
+            </Button>
           </div>
         </div>
       </nav>
@@ -72,7 +76,7 @@ const LandingPage = () => {
               <img 
                 src="/Astra.png" 
                 alt="Astra Logo" 
-                className="h-24 w-24 mb-8"
+                className="h-24 w-24 mb-8 mx-auto"
               />
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-arena-darkGray leading-tight mb-6">
                 Master <span className="text-arena-red">Data Structures</span> & <span className="text-arena-red">Algorithms</span>
@@ -80,11 +84,9 @@ const LandingPage = () => {
               <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-lg mx-auto">
                 Elevate your coding skills through structured learning paths, interactive challenges, and personalized feedback.
               </p>
-              <Link to="/login">
-                <Button className="bg-arena-red hover:bg-arena-darkRed text-white px-8 py-6 text-lg">
-                  Get Started <ChevronRight size={20} className="ml-2" />
-                </Button>
-              </Link>
+              <Button onClick={handleLoginClick} className="bg-arena-red hover:bg-arena-darkRed text-white px-8 py-6 text-lg">
+                Get Started <ChevronRight size={20} className="ml-2" />
+              </Button>
             </motion.div>
           </div>
         </div>
