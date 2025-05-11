@@ -51,12 +51,11 @@ const LandingPage = () => {
       {/* Minimalist navbar */}
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-3' : 'bg-transparent py-5'}`}>
         <div className="container mx-auto flex justify-between items-center px-4 md:px-8">
-          <div className="flex-grow"></div>
-          <div className="flex items-center justify-center flex-grow">
+          <div className="flex items-center">
             <img src="/Astra.png" alt="Astra Logo" className="h-10 w-10" />
             <h1 className={`font-bold text-xl md:text-2xl ml-2 ${isScrolled ? 'text-arena-darkGray' : 'text-arena-darkGray'}`}>Astra</h1>
           </div>
-          <div className="flex-grow flex justify-end">
+          <div className="flex justify-end">
             <Button onClick={handleLoginClick} className="bg-arena-red hover:bg-arena-darkRed">
               Login
             </Button>
