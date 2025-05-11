@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface User {
@@ -100,21 +99,9 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
     }
   };
 
-  const handleBackClick = () => {
-    navigate('/');
-  };
-
   return (
     <Card className="w-full max-w-md mx-auto mt-10">
-      <CardHeader className="text-center relative">
-        <Button 
-          variant="ghost" 
-          className="absolute left-0 top-6" 
-          onClick={handleBackClick}
-        >
-          <ArrowLeft size={18} className="mr-1" />
-          Back
-        </Button>
+      <CardHeader className="text-center">
         <div className="flex items-center justify-center mb-4">
           <img src="/Astra.png" alt="Astra Logo" className="h-12 w-12" />
           <CardTitle className="text-2xl font-bold text-arena-red ml-2">Astra</CardTitle>
