@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
 
 interface User {
   id: string;
@@ -27,7 +26,6 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,10 +100,7 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
   return (
     <Card className="w-full max-w-md mx-auto mt-10">
       <CardHeader className="text-center">
-        <div className="flex items-center justify-center mb-4">
-          <img src="/Astra.png" alt="Astra Logo" className="h-12 w-12" />
-          <CardTitle className="text-2xl font-bold text-arena-red ml-2">Astra</CardTitle>
-        </div>
+        <CardTitle className="text-2xl font-bold text-arena-red">Astra</CardTitle>
         <CardDescription>
           {isLogin ? "Sign in to your account" : "Create a new account"}
         </CardDescription>

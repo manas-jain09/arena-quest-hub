@@ -1,5 +1,5 @@
 
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Home, LogOut, Menu, Settings, User, X } from 'lucide-react';
 import { useState } from 'react';
@@ -10,17 +10,11 @@ interface NavbarProps {
 }
 
 export const Navbar = ({ onLogout }: NavbarProps) => {
-  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
-  };
-
-  const handleLogout = () => {
-    onLogout();
-    navigate('/');
   };
 
   return (
@@ -29,7 +23,6 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <img src="/Astra.png" alt="Astra Logo" className="h-8 w-8 mr-2" />
               <h1 className="text-xl font-bold text-arena-red">Astra</h1>
             </Link>
           </div>
@@ -48,7 +41,7 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Settings size={16} />
                 <span>Settings</span>
               </Button>
-              <Button onClick={handleLogout} variant="ghost" className="arena-nav-link flex items-center gap-1">
+              <Button onClick={onLogout} variant="ghost" className="arena-nav-link flex items-center gap-1">
                 <LogOut size={16} />
                 <span>Logout</span>
               </Button>
@@ -78,7 +71,7 @@ export const Navbar = ({ onLogout }: NavbarProps) => {
                 <Settings size={16} />
                 <span>Settings</span>
               </Button>
-              <Button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} variant="ghost" className="arena-nav-link flex items-center gap-1 py-3 justify-start">
+              <Button onClick={() => { onLogout(); setMobileMenuOpen(false); }} variant="ghost" className="arena-nav-link flex items-center gap-1 py-3 justify-start">
                 <LogOut size={16} />
                 <span>Logout</span>
               </Button>
