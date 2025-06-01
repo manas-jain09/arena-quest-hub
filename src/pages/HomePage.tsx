@@ -140,8 +140,7 @@ export const HomePage = ({ userId }: HomePageProps) => {
           </div>
           
           <QuestionTable 
-            topics={topicsWithQuestions} 
-            learningPathTitle={selectedPath?.title || ''}
+            topicsWithQuestions={topicsWithQuestions} 
             userId={userId}
           />
         </motion.div>
