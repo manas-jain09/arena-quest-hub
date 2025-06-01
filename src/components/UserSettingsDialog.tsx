@@ -28,7 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { AlertCircle, User, GraduationCap, MapPin, Link2, Lock } from 'lucide-react';
+import { AlertCircle, User, GraduationCap, MapPin, Link2, Lock, Plus, X, Briefcase, Award, BookOpen, Trophy } from 'lucide-react';
 
 interface UserSettingsDialogProps {
   open: boolean;
@@ -55,10 +55,73 @@ interface PasswordFormValues {
   confirm_password: string;
 }
 
+interface Skill {
+  id?: string;
+  skill_name: string;
+}
+
+interface Project {
+  id?: string;
+  title: string;
+  description: string;
+  technologies: string[];
+  start_date: string;
+  end_date?: string;
+  project_url?: string;
+  image_url?: string;
+}
+
+interface WorkExperience {
+  id?: string;
+  position: string;
+  company: string;
+  description: string;
+  start_date: string;
+  end_date?: string;
+  location?: string;
+  technologies: string[];
+}
+
+interface Training {
+  id?: string;
+  title: string;
+  organization: string;
+  description?: string;
+  start_date: string;
+  end_date?: string;
+}
+
+interface Assessment {
+  id?: string;
+  title: string;
+  provider: string;
+  score: string;
+  max_score: string;
+  assessment_date: string;
+  certificate_url?: string;
+}
+
+interface Certificate {
+  id?: string;
+  title: string;
+  issuer: string;
+  issue_date: string;
+  expiry_date?: string;
+  credential_url?: string;
+}
+
 export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   const [userEmail, setUserEmail] = useState<string>('');
+  
+  // State for additional profile data
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [workExperience, setWorkExperience] = useState<WorkExperience[]>([]);
+  const [trainings, setTrainings] = useState<Training[]>([]);
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
   
   const profileForm = useForm<ProfileFormValues>({
     defaultValues: {
@@ -88,6 +151,7 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
     if (open && userId) {
       fetchProfileData();
       fetchUserEmail();
+      fetchAdditionalData();
     }
   }, [open, userId]);
 
@@ -129,7 +193,6 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
       }
 
       if (data) {
-        // Reset form with existing data
         profileForm.reset({
           real_name: data.real_name || '',
           cgpa: data.cgpa || 0,
@@ -147,6 +210,60 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
       console.error('Unexpected error:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchAdditionalData = async () => {
+    try {
+      // Fetch skills
+      const { data: skillsData } = await supabase
+        .from('user_skills')
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (skillsData) setSkills(skillsData);
+
+      // Fetch projects
+      const { data: projectsData } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (projectsData) setProjects(projectsData);
+
+      // Fetch work experience
+      const { data: workData } = await supabase
+        .from('work_experience')
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (workData) setWorkExperience(workData);
+
+      // Fetch trainings
+      const { data: trainingData } = await supabase
+        .from('trainings')
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (trainingData) setTrainings(trainingData);
+
+      // Fetch assessments
+      const { data: assessmentData } = await supabase
+        .from('assessments')
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (assessmentData) setAssessments(assessmentData);
+
+      // Fetch certificates
+      const { data: certData } = await supabase
+        .from('certificates')
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (certData) setCertificates(certData);
+    } catch (error) {
+      console.error('Error fetching additional data:', error);
     }
   };
 
@@ -299,9 +416,126 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
     }
   };
 
+  // Skill management functions
+  const addSkill = async (skillName: string) => {
+    if (!skillName.trim()) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_skills')
+        .insert([{ user_id: userId, skill_name: skillName }])
+        .select()
+        .single();
+      
+      if (error) {
+        toast.error('Failed to add skill');
+        return;
+      }
+      
+      setSkills([...skills, data]);
+      toast.success('Skill added successfully');
+    } catch (error) {
+      toast.error('Error adding skill');
+    }
+  };
+
+  const removeSkill = async (skillId: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_skills')
+        .delete()
+        .eq('id', skillId);
+      
+      if (error) {
+        toast.error('Failed to remove skill');
+        return;
+      }
+      
+      setSkills(skills.filter(skill => skill.id !== skillId));
+      toast.success('Skill removed successfully');
+    } catch (error) {
+      toast.error('Error removing skill');
+    }
+  };
+
+  // Project management functions
+  const saveProject = async (project: Project) => {
+    try {
+      if (project.id) {
+        // Update existing project
+        const { error } = await supabase
+          .from('projects')
+          .update({
+            title: project.title,
+            description: project.description,
+            technologies: project.technologies,
+            start_date: project.start_date,
+            end_date: project.end_date || null,
+            project_url: project.project_url || null,
+            image_url: project.image_url || null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', project.id);
+        
+        if (error) {
+          toast.error('Failed to update project');
+          return;
+        }
+        
+        setProjects(projects.map(p => p.id === project.id ? project : p));
+        toast.success('Project updated successfully');
+      } else {
+        // Add new project
+        const { data, error } = await supabase
+          .from('projects')
+          .insert([{
+            user_id: userId,
+            title: project.title,
+            description: project.description,
+            technologies: project.technologies,
+            start_date: project.start_date,
+            end_date: project.end_date || null,
+            project_url: project.project_url || null,
+            image_url: project.image_url || null
+          }])
+          .select()
+          .single();
+        
+        if (error) {
+          toast.error('Failed to add project');
+          return;
+        }
+        
+        setProjects([...projects, data]);
+        toast.success('Project added successfully');
+      }
+    } catch (error) {
+      toast.error('Error saving project');
+    }
+  };
+
+  const removeProject = async (projectId: string) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId);
+      
+      if (error) {
+        toast.error('Failed to remove project');
+        return;
+      }
+      
+      setProjects(projects.filter(p => p.id !== projectId));
+      toast.success('Project removed successfully');
+    } catch (error) {
+      toast.error('Error removing project');
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col bg-white border border-gray-200 shadow-lg rounded-lg">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col bg-white border border-gray-200 shadow-lg rounded-lg">
         <DialogHeader className="border-b pb-4">
           <DialogTitle className="text-xl text-center font-semibold text-arena-darkGray">
             User Settings
@@ -309,18 +543,30 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
         </DialogHeader>
         
         <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab} className="w-full mt-2">
-          <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="profile" className="flex items-center gap-2">
-              <User size={16} />
-              <span>Personal Info</span>
+          <TabsList className="grid grid-cols-6 mb-4">
+            <TabsTrigger value="profile" className="flex items-center gap-1 text-xs">
+              <User size={14} />
+              <span className="hidden sm:inline">Profile</span>
             </TabsTrigger>
-            <TabsTrigger value="links" className="flex items-center gap-2">
-              <Link2 size={16} />
-              <span>Social Links</span>
+            <TabsTrigger value="links" className="flex items-center gap-1 text-xs">
+              <Link2 size={14} />
+              <span className="hidden sm:inline">Links</span>
             </TabsTrigger>
-            <TabsTrigger value="account" className="flex items-center gap-2">
-              <Lock size={16} />
-              <span>Account</span>
+            <TabsTrigger value="skills" className="flex items-center gap-1 text-xs">
+              <BookOpen size={14} />
+              <span className="hidden sm:inline">Skills</span>
+            </TabsTrigger>
+            <TabsTrigger value="experience" className="flex items-center gap-1 text-xs">
+              <Briefcase size={14} />
+              <span className="hidden sm:inline">Work</span>
+            </TabsTrigger>
+            <TabsTrigger value="achievements" className="flex items-center gap-1 text-xs">
+              <Award size={14} />
+              <span className="hidden sm:inline">Certs</span>
+            </TabsTrigger>
+            <TabsTrigger value="account" className="flex items-center gap-1 text-xs">
+              <Lock size={14} />
+              <span className="hidden sm:inline">Account</span>
             </TabsTrigger>
           </TabsList>
           
@@ -583,6 +829,85 @@ export function UserSettingsDialog({ open, onOpenChange, userId }: UserSettingsD
                   />
                 </form>
               </Form>
+            </TabsContent>
+
+            <TabsContent value="skills" className="space-y-4 animate-fade-in">
+              <div className="bg-arena-lightGray/50 rounded-lg p-4 mb-4">
+                <h3 className="font-medium flex items-center gap-2">
+                  <BookOpen size={18} className="text-arena-red" />
+                  Skills & Technologies
+                </h3>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Add a skill (e.g., React, Python, Machine Learning)" 
+                    className="border-gray-300 focus:border-arena-red"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        addSkill((e.target as HTMLInputElement).value);
+                        (e.target as HTMLInputElement).value = '';
+                      }
+                    }}
+                  />
+                  <Button 
+                    type="button"
+                    onClick={() => {
+                      const input = document.querySelector('input[placeholder*="Add a skill"]') as HTMLInputElement;
+                      if (input?.value) {
+                        addSkill(input.value);
+                        input.value = '';
+                      }
+                    }}
+                    className="bg-arena-red hover:bg-arena-darkRed"
+                  >
+                    <Plus size={16} />
+                  </Button>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  {skills.map((skill) => (
+                    <div key={skill.id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                      {skill.skill_name}
+                      <button 
+                        onClick={() => removeSkill(skill.id!)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="experience" className="space-y-4 animate-fade-in">
+              <div className="bg-arena-lightGray/50 rounded-lg p-4 mb-4">
+                <h3 className="font-medium flex items-center gap-2">
+                  <Briefcase size={18} className="text-arena-red" />
+                  Work Experience & Projects
+                </h3>
+              </div>
+              
+              {/* This would contain forms for work experience, projects, and trainings */}
+              <div className="text-center text-gray-500 py-8">
+                Work experience, projects, and training management forms will be implemented here.
+              </div>
+            </TabsContent>
+
+            <TabsContent value="achievements" className="space-y-4 animate-fade-in">
+              <div className="bg-arena-lightGray/50 rounded-lg p-4 mb-4">
+                <h3 className="font-medium flex items-center gap-2">
+                  <Award size={18} className="text-arena-red" />
+                  Achievements & Certifications
+                </h3>
+              </div>
+              
+              {/* This would contain forms for assessments and certifications */}
+              <div className="text-center text-gray-500 py-8">
+                Assessments, tests, and certifications management will be implemented here.
+              </div>
             </TabsContent>
             
             <TabsContent value="account" className="space-y-4 animate-fade-in">
