@@ -41,53 +41,6 @@ export type Database = {
           },
         ]
       }
-      assessments: {
-        Row: {
-          assessment_date: string
-          certificate_url: string | null
-          created_at: string
-          id: string
-          max_score: string
-          provider: string
-          score: string
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          assessment_date: string
-          certificate_url?: string | null
-          created_at?: string
-          id?: string
-          max_score: string
-          provider: string
-          score: string
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          assessment_date?: string
-          certificate_url?: string | null
-          created_at?: string
-          id?: string
-          max_score?: string
-          provider?: string
-          score?: string
-          title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "assessments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       badge_types: {
         Row: {
           background_color: string
@@ -115,6 +68,39 @@ export type Database = {
           id?: string
           name?: string
           text_color?: string
+        }
+        Relationships: []
+      }
+      blog_posts: {
+        Row: {
+          content: string
+          created_at: string
+          description: string
+          html_content: string | null
+          id: string
+          read_time: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          description: string
+          html_content?: string | null
+          id?: string
+          read_time: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          description?: string
+          html_content?: string | null
+          id?: string
+          read_time?: number
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -162,95 +148,6 @@ export type Database = {
           },
         ]
       }
-      coding_problems: {
-        Row: {
-          created_at: string
-          description: string
-          difficulty: string
-          id: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description: string
-          difficulty: string
-          id?: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string
-          difficulty?: string
-          id?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      contact_submissions: {
-        Row: {
-          created_at: string
-          email: string
-          id: string
-          message: string
-          name: string
-          status: string
-          subject: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          id?: string
-          message: string
-          name: string
-          status?: string
-          subject: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          id?: string
-          message?: string
-          name?: string
-          status?: string
-          subject?: string
-        }
-        Relationships: []
-      }
-      language_templates: {
-        Row: {
-          created_at: string
-          id: string
-          language: string
-          problem_id: string
-          template_code: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          language: string
-          problem_id: string
-          template_code: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          language?: string
-          problem_id?: string
-          template_code?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "language_templates_problem_id_fkey"
-            columns: ["problem_id"]
-            isOneToOne: false
-            referencedRelation: "coding_problems"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       learning_paths: {
         Row: {
           created_at: string
@@ -281,40 +178,85 @@ export type Database = {
         }
         Relationships: []
       }
-      problem_examples: {
+      post_categories: {
         Row: {
           created_at: string
-          example_number: number
-          explanation: string | null
           id: string
-          input: string
-          output: string
-          problem_id: string
+          name: string
         }
         Insert: {
           created_at?: string
-          example_number: number
-          explanation?: string | null
           id?: string
-          input: string
-          output: string
-          problem_id: string
+          name: string
         }
         Update: {
           created_at?: string
-          example_number?: number
-          explanation?: string | null
           id?: string
-          input?: string
-          output?: string
-          problem_id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      post_category_relations: {
+        Row: {
+          category_id: string
+          post_id: string
+        }
+        Insert: {
+          category_id: string
+          post_id: string
+        }
+        Update: {
+          category_id?: string
+          post_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "problem_examples_problem_id_fkey"
-            columns: ["problem_id"]
+            foreignKeyName: "post_category_relations_category_id_fkey"
+            columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: "coding_problems"
+            referencedRelation: "post_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_category_relations_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_resources: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string | null
+          title: string
+          type: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          title: string
+          type: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          title?: string
+          type?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_resources_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
             referencedColumns: ["id"]
           },
         ]
@@ -428,53 +370,6 @@ export type Database = {
           },
         ]
       }
-      publications: {
-        Row: {
-          authors: string[]
-          created_at: string
-          doi: string | null
-          id: string
-          publication_date: string
-          publication_name: string
-          title: string
-          updated_at: string
-          url: string | null
-          user_id: string
-        }
-        Insert: {
-          authors: string[]
-          created_at?: string
-          doi?: string | null
-          id?: string
-          publication_date: string
-          publication_name: string
-          title: string
-          updated_at?: string
-          url?: string | null
-          user_id: string
-        }
-        Update: {
-          authors?: string[]
-          created_at?: string
-          doi?: string | null
-          id?: string
-          publication_date?: string
-          publication_name?: string
-          title?: string
-          updated_at?: string
-          url?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "publications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       questions: {
         Row: {
           created_at: string
@@ -519,41 +414,6 @@ export type Database = {
           },
         ]
       }
-      test_cases: {
-        Row: {
-          created_at: string
-          expected_output: string
-          id: string
-          input: string
-          is_sample: boolean
-          problem_id: string
-        }
-        Insert: {
-          created_at?: string
-          expected_output: string
-          id?: string
-          input: string
-          is_sample?: boolean
-          problem_id: string
-        }
-        Update: {
-          created_at?: string
-          expected_output?: string
-          id?: string
-          input?: string
-          is_sample?: boolean
-          problem_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "test_cases_problem_id_fkey"
-            columns: ["problem_id"]
-            isOneToOne: false
-            referencedRelation: "coding_problems"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       topics: {
         Row: {
           created_at: string
@@ -582,50 +442,6 @@ export type Database = {
             columns: ["learning_path_id"]
             isOneToOne: false
             referencedRelation: "learning_paths"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      trainings: {
-        Row: {
-          created_at: string
-          description: string | null
-          end_date: string | null
-          id: string
-          organization: string
-          start_date: string
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          end_date?: string | null
-          id?: string
-          organization: string
-          start_date: string
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          end_date?: string | null
-          id?: string
-          organization?: string
-          start_date?: string
-          title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "trainings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -772,52 +588,8 @@ export type Database = {
           {
             foreignKeyName: "user_streaks_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_submissions: {
-        Row: {
-          code: string
-          execution_time: number | null
-          id: string
-          language: string
-          memory_used: number | null
-          problem_id: string
-          status: string
-          submitted_at: string
-          user_id: string
-        }
-        Insert: {
-          code: string
-          execution_time?: number | null
-          id?: string
-          language: string
-          memory_used?: number | null
-          problem_id: string
-          status: string
-          submitted_at?: string
-          user_id: string
-        }
-        Update: {
-          code?: string
-          execution_time?: number | null
-          id?: string
-          language?: string
-          memory_used?: number | null
-          problem_id?: string
-          status?: string
-          submitted_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_submissions_problem_id_fkey"
-            columns: ["problem_id"]
-            isOneToOne: false
-            referencedRelation: "coding_problems"
             referencedColumns: ["id"]
           },
         ]
