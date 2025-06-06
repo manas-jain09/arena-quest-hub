@@ -35,7 +35,7 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
       if (isLogin) {
         // Login logic
         const { data, error } = await supabase
-          .from('users')
+          .from('auth')
           .select('*')
           .eq('prn', prn)
           .eq('password', password)
