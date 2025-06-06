@@ -27,7 +27,7 @@ export function useLearningPaths(userId: string) {
       try {
         console.log('Fetching assigned paths for user:', userId);
         const { data, error } = await supabase
-          .from('users')
+          .from('auth')
           .select('assigned_learning_paths')
           .eq('id', userId)
           .single();
