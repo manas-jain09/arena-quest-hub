@@ -143,45 +143,57 @@ export type Database = {
       }
       auth: {
         Row: {
+          assigned_learning_paths: string[] | null
           batch: string | null
+          course: string | null
           created_at: string
           department: string | null
           division: string | null
           email: string
+          grad_year: string | null
           id: string
           name: string | null
           organization: string | null
           password: string
           prn: string | null
           role: string
+          username: string | null
           year: string | null
         }
         Insert: {
+          assigned_learning_paths?: string[] | null
           batch?: string | null
+          course?: string | null
           created_at?: string
           department?: string | null
           division?: string | null
           email: string
+          grad_year?: string | null
           id?: string
           name?: string | null
           organization?: string | null
           password: string
           prn?: string | null
           role?: string
+          username?: string | null
           year?: string | null
         }
         Update: {
+          assigned_learning_paths?: string[] | null
           batch?: string | null
+          course?: string | null
           created_at?: string
           department?: string | null
           division?: string | null
           email?: string
+          grad_year?: string | null
           id?: string
           name?: string | null
           organization?: string | null
           password?: string
           prn?: string | null
           role?: string
+          username?: string | null
           year?: string | null
         }
         Relationships: []

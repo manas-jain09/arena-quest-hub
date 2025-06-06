@@ -33,9 +33,9 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
     
     try {
       if (isLogin) {
-        // Login logic
+        // Login logic using auth table
         const { data, error } = await supabase
-          .from('users')
+          .from('auth')
           .select('*')
           .eq('prn', prn)
           .eq('password', password)
@@ -58,9 +58,9 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
           throw new Error('All fields are required');
         }
         
-        // Check if user already exists
+        // Check if user already exists in auth table
         const { data: existingUser } = await supabase
-          .from('users')
+          .from('auth')
           .select('*')
           .or(`email.eq.${email},prn.eq.${prn},username.eq.${username}`)
           .maybeSingle();
@@ -69,10 +69,10 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
           throw new Error('User with this email, PRN, or username already exists');
         }
         
-        // Register the new user
+        // Register the new user in auth table
         const { data, error } = await supabase
-          .from('users')
-          .insert([{ username, email, prn, password }])
+          .from('auth')
+          .insert({ username, email, prn, password })
           .select()
           .single();
         
