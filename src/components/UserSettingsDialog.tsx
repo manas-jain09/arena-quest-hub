@@ -7,13 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ProjectsSection } from './settings/ProjectsSection';
-import { WorkExperienceSection } from './settings/WorkExperienceSection';
-import { TrainingSection } from './settings/TrainingSection';
-import { AssessmentsSection } from './settings/AssessmentsSection';
-import { CertificatesSection } from './settings/CertificatesSection';
 
 interface UserSettingsDialogProps {
   open: boolean;
@@ -152,152 +146,121 @@ export const UserSettingsDialog = ({ open, onOpenChange, userId }: UserSettingsD
           <DialogTitle>User Settings</DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue="personal" className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="grid w-full grid-cols-6 mx-6 mt-4 flex-shrink-0">
-            <TabsTrigger value="personal">Personal</TabsTrigger>
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="experience">Experience</TabsTrigger>
-            <TabsTrigger value="training">Training</TabsTrigger>
-            <TabsTrigger value="assessments">Assessments</TabsTrigger>
-            <TabsTrigger value="certificates">Certificates</TabsTrigger>
-          </TabsList>
-          
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <ScrollArea className="flex-1 px-6">
-              <TabsContent value="personal" className="space-y-6 py-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="real_name">Full Name</Label>
-                    <Input
-                      id="real_name"
-                      value={profile.real_name}
-                      onChange={(e) => handleInputChange('real_name', e.target.value)}
-                      placeholder="Enter your full name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cgpa">CGPA</Label>
-                    <Input
-                      id="cgpa"
-                      value={profile.cgpa}
-                      onChange={(e) => handleInputChange('cgpa', e.target.value)}
-                      placeholder="Enter your CGPA"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="college_name">College Name</Label>
-                    <Input
-                      id="college_name"
-                      value={profile.college_name}
-                      onChange={(e) => handleInputChange('college_name', e.target.value)}
-                      placeholder="Enter your college name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
-                    <Input
-                      id="location"
-                      value={profile.location}
-                      onChange={(e) => handleInputChange('location', e.target.value)}
-                      placeholder="Enter your location"
-                    />
-                  </div>
-                </div>
-                
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <ScrollArea className="flex-1 px-6">
+            <div className="space-y-6 py-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={profile.bio}
-                    onChange={(e) => handleInputChange('bio', e.target.value)}
-                    placeholder="Tell us about yourself"
-                    rows={4}
+                  <Label htmlFor="real_name">Full Name</Label>
+                  <Input
+                    id="real_name"
+                    value={profile.real_name}
+                    onChange={(e) => handleInputChange('real_name', e.target.value)}
+                    placeholder="Enter your full name"
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cgpa">CGPA</Label>
+                  <Input
+                    id="cgpa"
+                    value={profile.cgpa}
+                    onChange={(e) => handleInputChange('cgpa', e.target.value)}
+                    placeholder="Enter your CGPA"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="college_name">College Name</Label>
+                  <Input
+                    id="college_name"
+                    value={profile.college_name}
+                    onChange={(e) => handleInputChange('college_name', e.target.value)}
+                    placeholder="Enter your college name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    value={profile.location}
+                    onChange={(e) => handleInputChange('location', e.target.value)}
+                    placeholder="Enter your location"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea
+                  id="bio"
+                  value={profile.bio}
+                  onChange={(e) => handleInputChange('bio', e.target.value)}
+                  placeholder="Tell us about yourself"
+                  rows={4}
+                />
+              </div>
 
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Social Links</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="linkedin_url">LinkedIn URL</Label>
-                      <Input
-                        id="linkedin_url"
-                        value={profile.linkedin_url}
-                        onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
-                        placeholder="https://linkedin.com/in/username"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="github_url">GitHub URL</Label>
-                      <Input
-                        id="github_url"
-                        value={profile.github_url}
-                        onChange={(e) => handleInputChange('github_url', e.target.value)}
-                        placeholder="https://github.com/username"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="leetcode_url">LeetCode URL</Label>
-                      <Input
-                        id="leetcode_url"
-                        value={profile.leetcode_url}
-                        onChange={(e) => handleInputChange('leetcode_url', e.target.value)}
-                        placeholder="https://leetcode.com/username"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="hackerrank_url">HackerRank URL</Label>
-                      <Input
-                        id="hackerrank_url"
-                        value={profile.hackerrank_url}
-                        onChange={(e) => handleInputChange('hackerrank_url', e.target.value)}
-                        placeholder="https://hackerrank.com/username"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="gfg_url">GeeksforGeeks URL</Label>
-                      <Input
-                        id="gfg_url"
-                        value={profile.gfg_url}
-                        onChange={(e) => handleInputChange('gfg_url', e.target.value)}
-                        placeholder="https://auth.geeksforgeeks.org/user/username"
-                      />
-                    </div>
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Social Links</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="linkedin_url">LinkedIn URL</Label>
+                    <Input
+                      id="linkedin_url"
+                      value={profile.linkedin_url}
+                      onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
+                      placeholder="https://linkedin.com/in/username"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="github_url">GitHub URL</Label>
+                    <Input
+                      id="github_url"
+                      value={profile.github_url}
+                      onChange={(e) => handleInputChange('github_url', e.target.value)}
+                      placeholder="https://github.com/username"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="leetcode_url">LeetCode URL</Label>
+                    <Input
+                      id="leetcode_url"
+                      value={profile.leetcode_url}
+                      onChange={(e) => handleInputChange('leetcode_url', e.target.value)}
+                      placeholder="https://leetcode.com/username"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="hackerrank_url">HackerRank URL</Label>
+                    <Input
+                      id="hackerrank_url"
+                      value={profile.hackerrank_url}
+                      onChange={(e) => handleInputChange('hackerrank_url', e.target.value)}
+                      placeholder="https://hackerrank.com/username"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="gfg_url">GeeksforGeeks URL</Label>
+                    <Input
+                      id="gfg_url"
+                      value={profile.gfg_url}
+                      onChange={(e) => handleInputChange('gfg_url', e.target.value)}
+                      placeholder="https://auth.geeksforgeeks.org/user/username"
+                    />
                   </div>
                 </div>
-              </TabsContent>
-
-              <TabsContent value="projects" className="py-6">
-                <ProjectsSection userId={userId} />
-              </TabsContent>
-
-              <TabsContent value="experience" className="py-6">
-                <WorkExperienceSection userId={userId} />
-              </TabsContent>
-
-              <TabsContent value="training" className="py-6">
-                <TrainingSection userId={userId} />
-              </TabsContent>
-
-              <TabsContent value="assessments" className="py-6">
-                <AssessmentsSection userId={userId} />
-              </TabsContent>
-
-              <TabsContent value="certificates" className="py-6">
-                <CertificatesSection userId={userId} />
-              </TabsContent>
-            </ScrollArea>
-            
-            <div className="flex justify-end gap-3 p-6 border-t bg-background flex-shrink-0">
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSave} disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save Changes"}
-              </Button>
+              </div>
             </div>
+          </ScrollArea>
+          
+          <div className="flex justify-end gap-3 p-6 border-t bg-background flex-shrink-0">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={isLoading}>
+              {isLoading ? "Saving..." : "Save Changes"}
+            </Button>
           </div>
-        </Tabs>
+        </div>
       </DialogContent>
     </Dialog>
   );

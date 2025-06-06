@@ -157,6 +157,7 @@ export type Database = {
           password: string
           prn: string | null
           role: string
+          updated_at: string | null
           username: string | null
           year: string | null
         }
@@ -175,6 +176,7 @@ export type Database = {
           password: string
           prn?: string | null
           role?: string
+          updated_at?: string | null
           username?: string | null
           year?: string | null
         }
@@ -193,6 +195,7 @@ export type Database = {
           password?: string
           prn?: string | null
           role?: string
+          updated_at?: string | null
           username?: string | null
           year?: string | null
         }
