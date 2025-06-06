@@ -1,0 +1,168 @@
+
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
+
+const AutoLogin = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [isProcessing, setIsProcessing] = useState(true);
+  const [status, setStatus] = useState('Validating login token...');
+
+  useEffect(() => {
+    const processAutoLogin = async () => {
+      const token = searchParams.get('token');
+
+      if (!token) {
+        setStatus('Invalid login link');
+        toast({
+          title: "Error",
+          description: "Invalid auto-login token",
+          variant: "destructive",
+        });
+        setTimeout(() => navigate('/'), 3000);
+        return;
+      }
+
+      try {
+        // Validate the token
+        const { data: tokenData, error: tokenError } = await supabase
+          .from('auto_login_tokens')
+          .select('user_id, expires_at, used')
+          .eq('token', token)
+          .single();
+
+        if (tokenError || !tokenData) {
+          setStatus('Invalid or expired token');
+          toast({
+            title: "Error",
+            description: "Invalid or expired auto-login token",
+            variant: "destructive",
+          });
+          setTimeout(() => navigate('/'), 3000);
+          return;
+        }
+
+        // Check if token is expired
+        const now = new Date();
+        const expiresAt = new Date(tokenData.expires_at);
+        
+        if (now > expiresAt) {
+          setStatus('Login token has expired');
+          toast({
+            title: "Error",
+            description: "Auto-login token has expired",
+            variant: "destructive",
+          });
+          setTimeout(() => navigate('/'), 3000);
+          return;
+        }
+
+        // Check if token was already used
+        if (tokenData.used) {
+          setStatus('Login token has already been used');
+          toast({
+            title: "Error",
+            description: "Auto-login token has already been used",
+            variant: "destructive",
+          });
+          setTimeout(() => navigate('/'), 3000);
+          return;
+        }
+
+        // Mark token as used
+        await supabase
+          .from('auto_login_tokens')
+          .update({ used: true })
+          .eq('token', token);
+
+        // Get user data
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', tokenData.user_id)
+          .single();
+
+        if (userError || !userData) {
+          setStatus('User not found');
+          toast({
+            title: "Error",
+            description: "User account not found",
+            variant: "destructive",
+          });
+          setTimeout(() => navigate('/'), 3000);
+          return;
+        }
+
+        // Store user data in localStorage for the app
+        localStorage.setItem('userId', userData.id);
+        localStorage.setItem('userData', JSON.stringify(userData));
+
+        setStatus('Login successful! Redirecting...');
+        toast({
+          title: "Success",
+          description: `Welcome back, ${userData.username}!`,
+        });
+
+        // Redirect to home page
+        setTimeout(() => navigate('/'), 1000);
+
+      } catch (error) {
+        console.error('Auto-login error:', error);
+        setStatus('An error occurred during login');
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred during auto-login",
+          variant: "destructive",
+        });
+        setTimeout(() => navigate('/'), 3000);
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    processAutoLogin();
+  }, [searchParams, navigate]);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+      <motion.div 
+        className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="text-center">
+          <motion.div
+            className="mb-6"
+            animate={{ rotate: isProcessing ? 360 : 0 }}
+            transition={{ duration: 1, repeat: isProcessing ? Infinity : 0, ease: "linear" }}
+          >
+            <div className="w-16 h-16 bg-arena-red rounded-full flex items-center justify-center mx-auto">
+              <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </motion.div>
+          
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Auto Login</h1>
+          <p className="text-gray-600 mb-4">{status}</p>
+          
+          {!isProcessing && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <p className="text-sm text-gray-500">
+                You will be redirected automatically...
+              </p>
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default AutoLogin;

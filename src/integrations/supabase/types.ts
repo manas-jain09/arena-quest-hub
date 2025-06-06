@@ -143,46 +143,88 @@ export type Database = {
       }
       auth: {
         Row: {
+          assigned_learning_paths: string[] | null
           batch: string | null
+          course: string | null
           created_at: string
           department: string | null
           division: string | null
           email: string
+          grad_year: string | null
           id: string
           name: string | null
           organization: string | null
           password: string
           prn: string | null
           role: string
+          updated_at: string | null
+          username: string | null
           year: string | null
         }
         Insert: {
+          assigned_learning_paths?: string[] | null
           batch?: string | null
+          course?: string | null
           created_at?: string
           department?: string | null
           division?: string | null
           email: string
+          grad_year?: string | null
           id?: string
           name?: string | null
           organization?: string | null
           password: string
           prn?: string | null
           role?: string
+          updated_at?: string | null
+          username?: string | null
           year?: string | null
         }
         Update: {
+          assigned_learning_paths?: string[] | null
           batch?: string | null
+          course?: string | null
           created_at?: string
           department?: string | null
           division?: string | null
           email?: string
+          grad_year?: string | null
           id?: string
           name?: string | null
           organization?: string | null
           password?: string
           prn?: string | null
           role?: string
+          updated_at?: string | null
+          username?: string | null
           year?: string | null
+        }
+        Relationships: []
+      }
+      auto_login_tokens: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          token: string
+          used: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          token: string
+          used?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          token?: string
+          used?: boolean | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -755,7 +797,7 @@ export type Database = {
             foreignKeyName: "profiles_id_fkey"
             columns: ["id"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "auth"
             referencedColumns: ["id"]
           },
         ]
@@ -1114,7 +1156,7 @@ export type Database = {
             foreignKeyName: "user_badges_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "auth"
             referencedColumns: ["id"]
           },
         ]
@@ -1200,7 +1242,7 @@ export type Database = {
             foreignKeyName: "user_progress_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "auth"
             referencedColumns: ["id"]
           },
         ]
@@ -1229,7 +1271,7 @@ export type Database = {
             foreignKeyName: "user_skills_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "auth"
             referencedColumns: ["id"]
           },
         ]

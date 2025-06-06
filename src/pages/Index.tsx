@@ -25,6 +25,9 @@ const Index = () => {
         console.log('User restored from localStorage:', userData);
       } catch (error) {
         console.error('Failed to parse saved user data', error);
+        // Clear invalid data
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userData');
       }
     }
     setIsLoading(false);
