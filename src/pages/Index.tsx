@@ -30,14 +30,14 @@ const Index = () => {
     setIsLoading(false);
   }, []);
 
-  // Ensure assigned learning paths are properly loaded from auth table
+  // Ensure assigned learning paths are properly loaded
   useEffect(() => {
     const refreshUserData = async () => {
       if (!user || !user.id) return;
       
       try {
         const { data, error } = await supabase
-          .from('auth')
+          .from('users')
           .select('*')
           .eq('id', user.id)
           .single();

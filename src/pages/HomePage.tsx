@@ -15,7 +15,7 @@ interface HomePageProps {
 
 export const HomePage = ({ userId }: HomePageProps) => {
   const [selectedPathId, setSelectedPathId] = useState<string | null>(null);
-  const { isLoading: isPathsLoading, learningPaths } = useLearningPaths(userId);
+  const { isLoading: isPathsLoading, filteredPaths } = useLearningPaths(userId);
   const { isLoading: isTopicsLoading, topicsWithQuestions } = useTopicsWithQuestions(selectedPathId, userId);
   
   const isLoading = isPathsLoading || (selectedPathId && isTopicsLoading);
@@ -25,7 +25,7 @@ export const HomePage = ({ userId }: HomePageProps) => {
     setSelectedPathId(pathId);
   };
   
-  const selectedPath = learningPaths.find(path => path.id === selectedPathId);
+  const selectedPath = filteredPaths.find(path => path.id === selectedPathId);
 
   const container = {
     hidden: { opacity: 0 },
@@ -45,10 +45,10 @@ export const HomePage = ({ userId }: HomePageProps) => {
   // Debug information
   useEffect(() => {
     console.log('UserId:', userId);
-    console.log('Learning Paths:', learningPaths);
-    console.log('Learning Paths length:', learningPaths.length);
+    console.log('Filtered Paths:', filteredPaths);
+    console.log('Filtered Paths length:', filteredPaths.length);
     console.log('Is Loading:', isLoading);
-  }, [userId, learningPaths, isLoading]);
+  }, [userId, filteredPaths, isLoading]);
 
   return (
     <div className="container mx-auto px-4 py-8 bg-pattern-dots min-h-screen">
@@ -77,15 +77,16 @@ export const HomePage = ({ userId }: HomePageProps) => {
             <div className="h-1 w-20 bg-arena-red rounded-full mt-2"></div>
           </motion.h1>
           
-          {learningPaths.length > 0 ? (
+          {filteredPaths.length > 0 ? (
             <>
+{/*               <p className="text-gray-600 mb-6">Total paths available: {filteredPaths.length}</p> */}
               <motion.div 
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                 variants={container}
                 initial="hidden"
                 animate="show"
               >
-                {learningPaths.map((path) => (
+                {filteredPaths.map((path) => (
                   <motion.div key={path.id} variants={item} className="w-full">
                     <LearningPathCard
                       title={path.title}

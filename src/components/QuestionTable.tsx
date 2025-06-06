@@ -55,7 +55,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
   const getPRN = async () => {
     try {
       const { data, error } = await supabase
-        .from('auth')
+        .from('users')
         .select('prn')
         .eq('id', userId)
         .single();
@@ -97,21 +97,14 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
           .update({ is_completed: newCompletedState })
           .eq('id', existingProgress.id);
       } else {
-        // Generate a new UUID for the id field
-        const { data, error } = await supabase
+        await supabase
           .from('user_progress')
-          .insert({ 
-            id: crypto.randomUUID(),
+          .insert([{ 
             user_id: userId, 
             question_id: questionId, 
             is_completed: newCompletedState,
             is_marked_for_revision: false
-          });
-        
-        if (error) {
-          console.error('Insert error:', error);
-          throw error;
-        }
+          }]);
       }
       
       setTopics(currentTopics => 
@@ -166,21 +159,14 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
           .update({ is_marked_for_revision: newRevisionState })
           .eq('id', existingProgress.id);
       } else {
-        // Generate a new UUID for the id field
-        const { data, error } = await supabase
+        await supabase
           .from('user_progress')
-          .insert({ 
-            id: crypto.randomUUID(),
+          .insert([{ 
             user_id: userId, 
             question_id: questionId, 
             is_completed: false,
             is_marked_for_revision: newRevisionState
-          });
-        
-        if (error) {
-          console.error('Insert error:', error);
-          throw error;
-        }
+          }]);
       }
       
       setTopics(currentTopics => 
