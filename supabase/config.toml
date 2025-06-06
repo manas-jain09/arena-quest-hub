@@ -1,5 +1,1 @@
-
 project_id = "tafvjwurzgpugcfidbfv"
-
-[functions.auto-login]
-verify_jwt = false
