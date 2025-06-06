@@ -35,6 +35,7 @@ export interface Topic {
   learning_path_id: string;
   created_at: string;
   updated_at: string;
+  questions?: Question[];
 }
 
 export interface Question {
