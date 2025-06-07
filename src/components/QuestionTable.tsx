@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -252,28 +251,23 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
         return;
       }
 
-      // Generate auto-login token
-      const { data: tokenResponse, error: tokenError } = await supabase.functions.invoke('auto-login', {
-        body: { userId }
-      });
+      // Generate a random UUID for the token
+      const autoLoginToken = crypto.randomUUID();
 
-      if (tokenError || !tokenResponse?.loginUrl) {
-        toast({
-          title: "Error",
-          description: "Failed to generate login token",
-          variant: "destructive",
+      // Insert the token directly into auto_login_tokens table
+      const { error: tokenError } = await supabase
+        .from('auto_login_tokens')
+        .insert({
+          user_id: userId,
+          token: autoLoginToken,
+          expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 minutes from now
         });
-        return;
-      }
 
-      // Extract token from loginUrl
-      const url = new URL(tokenResponse.loginUrl);
-      const autoLoginToken = url.searchParams.get('token');
-
-      if (!autoLoginToken) {
+      if (tokenError) {
+        console.error('Error creating token:', tokenError);
         toast({
           title: "Error",
-          description: "Failed to extract login token",
+          description: "Failed to create login token",
           variant: "destructive",
         });
         return;
