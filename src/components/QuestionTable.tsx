@@ -98,9 +98,12 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
           .update({ is_completed: newCompletedState })
           .eq('id', existingProgress.id);
       } else {
+        // Generate a UUID for the id field
+        const progressId = crypto.randomUUID();
         await supabase
           .from('user_progress')
           .insert([{ 
+            id: progressId,
             user_id: userId, 
             question_id: questionId, 
             is_completed: newCompletedState,
@@ -160,9 +163,12 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
           .update({ is_marked_for_revision: newRevisionState })
           .eq('id', existingProgress.id);
       } else {
+        // Generate a UUID for the id field
+        const progressId = crypto.randomUUID();
         await supabase
           .from('user_progress')
           .insert([{ 
+            id: progressId,
             user_id: userId, 
             question_id: questionId, 
             is_completed: false,

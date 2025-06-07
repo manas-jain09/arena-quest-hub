@@ -4,6 +4,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { Topic } from '@/types';
 import { toast } from '@/hooks/use-toast';
 
+// Helper function to normalize difficulty string to expected type
+const normalizeDifficulty = (difficulty: string | null): 'easy' | 'medium' | 'hard' | 'theory' => {
+  if (!difficulty) return 'easy';
+  const lower = difficulty.toLowerCase();
+  if (lower === 'theory' || lower === 'easy' || lower === 'medium' || lower === 'hard') {
+    return lower as 'easy' | 'medium' | 'hard' | 'theory';
+  }
+  return 'easy';
+};
+
 export function useTopicsWithQuestions(selectedPathId: string | null, userId: string) {
   const [isLoading, setIsLoading] = useState(false);
   const [topicsWithQuestions, setTopicsWithQuestions] = useState<Topic[]>([]);
@@ -53,13 +63,16 @@ export function useTopicsWithQuestions(selectedPathId: string | null, userId: st
               const userProgress = progress?.find(p => p.question_id === question.id);
               return {
                 ...question,
+                difficulty: normalizeDifficulty(question.difficulty),
                 is_completed: userProgress?.is_completed || false,
                 is_marked_for_revision: userProgress?.is_marked_for_revision || false
               };
             }) || [];
             
             return {
-              ...topic,
+              id: topic.id,
+              name: topic.name || '',
+              learning_path_id: topic.learning_path_id || '',
               questions: questionsWithProgress
             };
           })

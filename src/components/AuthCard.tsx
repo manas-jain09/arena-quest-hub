@@ -69,10 +69,17 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
           throw new Error('User with this email, PRN, or username already exists');
         }
         
-        // Register the new user
+        // Register the new user - generate a UUID for the id field
+        const userId = crypto.randomUUID();
         const { data, error } = await supabase
           .from('users')
-          .insert([{ username, email, prn, password }])
+          .insert([{ 
+            id: userId,
+            username, 
+            email, 
+            prn, 
+            password 
+          }])
           .select()
           .single();
         

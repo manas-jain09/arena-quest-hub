@@ -15,6 +15,16 @@ const getDifficultyOrder = (difficulty: string): number => {
   }
 };
 
+// Helper function to normalize difficulty string to expected type
+const normalizeDifficulty = (difficulty: string | null): 'easy' | 'medium' | 'hard' | 'theory' => {
+  if (!difficulty) return 'easy';
+  const lower = difficulty.toLowerCase();
+  if (lower === 'theory' || lower === 'easy' || lower === 'medium' || lower === 'hard') {
+    return lower as 'easy' | 'medium' | 'hard' | 'theory';
+  }
+  return 'easy';
+};
+
 export function useLearningPaths(userId: string) {
   const [isLoading, setIsLoading] = useState(true);
   const [learningPaths, setLearningPaths] = useState<LearningPath[]>([]);
@@ -93,7 +103,10 @@ export function useLearningPaths(userId: string) {
               if (topicsError || questionsError) {
                 console.error('Error fetching counts', topicsError || questionsError);
                 return {
-                  ...path,
+                  id: path.id,
+                  title: path.title || '',
+                  description: path.description || '',
+                  difficulty: normalizeDifficulty(path.difficulty),
                   topicsCount: 0,
                   questionsCount: 0
                 };
@@ -114,7 +127,10 @@ export function useLearningPaths(userId: string) {
               }
               
               return {
-                ...path,
+                id: path.id,
+                title: path.title || '',
+                description: path.description || '',
+                difficulty: normalizeDifficulty(path.difficulty),
                 topicsCount: topicsCount || 0,
                 questionsCount: questionsCount
               };
