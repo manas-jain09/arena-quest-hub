@@ -80,7 +80,7 @@ const AutoLogin = () => {
 
         // Get user data
         const { data: userData, error: userError } = await supabase
-          .from('users')
+          .from('auth')
           .select('*')
           .eq('id', tokenData.user_id)
           .single();
