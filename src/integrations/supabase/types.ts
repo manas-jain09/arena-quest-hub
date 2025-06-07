@@ -492,6 +492,36 @@ export type Database = {
           },
         ]
       }
+      contact_submissions: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          message: string | null
+          name: string
+          status: string | null
+          subject: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          message?: string | null
+          name: string
+          status?: string | null
+          subject?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          message?: string | null
+          name?: string
+          status?: string | null
+          subject?: string | null
+        }
+        Relationships: []
+      }
       learning_paths: {
         Row: {
           created_at: string | null
@@ -746,13 +776,13 @@ export type Database = {
       profiles: {
         Row: {
           bio: string | null
-          cgpa: string | null
+          cgpa: number | null
           college_name: string | null
           created_at: string | null
           gfg_url: string | null
           github_url: string | null
           hackerrank_url: string | null
-          id: string | null
+          id: string
           leetcode_url: string | null
           linkedin_url: string | null
           location: string | null
@@ -762,13 +792,13 @@ export type Database = {
         }
         Insert: {
           bio?: string | null
-          cgpa?: string | null
+          cgpa?: number | null
           college_name?: string | null
           created_at?: string | null
           gfg_url?: string | null
           github_url?: string | null
           hackerrank_url?: string | null
-          id?: string | null
+          id: string
           leetcode_url?: string | null
           linkedin_url?: string | null
           location?: string | null
@@ -778,13 +808,13 @@ export type Database = {
         }
         Update: {
           bio?: string | null
-          cgpa?: string | null
+          cgpa?: number | null
           college_name?: string | null
           created_at?: string | null
           gfg_url?: string | null
           github_url?: string | null
           hackerrank_url?: string | null
-          id?: string | null
+          id?: string
           leetcode_url?: string | null
           linkedin_url?: string | null
           location?: string | null
@@ -796,7 +826,7 @@ export type Database = {
           {
             foreignKeyName: "profiles_id_fkey"
             columns: ["id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "auth"
             referencedColumns: ["id"]
           },
