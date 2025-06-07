@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -227,8 +228,89 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
     }
   };
 
-  const handlePracticeClick = async (practiceLink: string) => {
-    window.open(practiceLink, '_blank');
+  const handlePracticeClick = async (questionId: string) => {
+    try {
+      // First, get the question_id from the questions table
+      const { data: questionData, error: questionError } = await supabase
+        .from('questions')
+        .select('question_id')
+        .eq('id', questionId)
+        .single();
+
+      if (questionError || !questionData?.question_id) {
+        toast({
+          title: "Error",
+          description: "Failed to get question details",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Generate auto-login token
+      const { data: tokenResponse, error: tokenError } = await supabase.functions.invoke('auto-login', {
+        body: { userId }
+      });
+
+      if (tokenError || !tokenResponse?.loginUrl) {
+        toast({
+          title: "Error",
+          description: "Failed to generate login token",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Extract token from loginUrl
+      const url = new URL(tokenResponse.loginUrl);
+      const autoLoginToken = url.searchParams.get('token');
+
+      if (!autoLoginToken) {
+        toast({
+          title: "Error",
+          description: "Failed to extract login token",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Send POST request to coding-question-api
+      const response = await fetch('https://tafvjwurzgpugcfidbfv.supabase.co/functions/v1/coding-question-api', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userId,
+          questionId: questionData.question_id,
+          autoLoginToken: autoLoginToken
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.loginUrl) {
+        // Redirect to the received loginUrl
+        window.open(result.loginUrl, '_blank');
+      } else {
+        toast({
+          title: "Error",
+          description: "No redirect URL received",
+          variant: "destructive",
+        });
+      }
+
+    } catch (error: any) {
+      console.error('Practice click error:', error);
+      toast({
+        title: "Error",
+        description: `Failed to start practice session: ${error.message}`,
+        variant: "destructive",
+      });
+    }
   };
 
   const totalQuestions = topics.reduce((acc, topic) => acc + topic.questions.length, 0);
@@ -379,7 +461,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handlePracticeClick(question.practice_link);
+                            handlePracticeClick(question.id);
                           }}
                           className="text-arena-red hover:text-white hover:bg-arena-red inline-flex items-center gap-1 border-arena-red/30"
                         >
