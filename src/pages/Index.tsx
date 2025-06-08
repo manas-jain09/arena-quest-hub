@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { HomePage } from '@/pages/HomePage';
@@ -31,6 +30,13 @@ const Index = () => {
     }
     setIsLoading(false);
   }, []);
+
+  // Redirect to ikshvaku-innovations.in if no user is found
+  useEffect(() => {
+    if (!isLoading && !user) {
+      window.location.href = 'https://ikshvaku-innovations.in';
+    }
+  }, [isLoading, user]);
 
   // Ensure assigned learning paths are properly loaded
   useEffect(() => {
@@ -108,10 +114,9 @@ const Index = () => {
           >
             <div className="w-full max-w-md mx-auto mt-10">
               <div className="bg-white rounded-lg shadow-md p-8">
-                <h1 className="text-2xl font-bold text-arena-red mb-4">Astra</h1>
-
+                <h1 className="text-2xl font-bold text-arena-red mb-4">Redirecting...</h1>
                 <p className="text-sm text-gray-500">
-                  Please contact your administrator to receive your personalized login link.
+                  Please wait while we redirect you to Ikshvaku Innovations.
                 </p>
               </div>
             </div>
