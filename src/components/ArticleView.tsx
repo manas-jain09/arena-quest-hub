@@ -29,27 +29,44 @@ export function ArticleView() {
         setIsLoading(true);
         console.log('Fetching article for question ID:', questionId);
         
-        // Fetch article with question details
-        const { data, error } = await supabase
+        // First fetch the question details
+        const { data: questionData, error: questionError } = await supabase
+          .from('questions')
+          .select('title, difficulty')
+          .eq('id', questionId)
+          .maybeSingle();
+        
+        if (questionError) {
+          console.error('Error fetching question:', questionError);
+        }
+        
+        // Then fetch the article using question_id
+        const { data: articleData, error: articleError } = await supabase
           .from('articles')
-          .select(`
-            *,
-            question:questions!inner (
-              title, 
-              difficulty
-            )
-          `)
+          .select('*')
           .eq('question_id', questionId)
           .maybeSingle();
         
-        if (error) {
-          console.error('Error fetching article:', error);
+        if (articleError) {
+          console.error('Error fetching article:', articleError);
           toast.error('Failed to load article');
           return;
         }
         
-        console.log('Article data:', data);
-        setArticle(data);
+        if (!articleData) {
+          console.log('No article found for question ID:', questionId);
+          setArticle(null);
+          return;
+        }
+        
+        // Combine the data
+        const combinedData = {
+          ...articleData,
+          question: questionData
+        };
+        
+        console.log('Article data:', combinedData);
+        setArticle(combinedData);
       } catch (error) {
         console.error('Unexpected error:', error);
         toast.error('An unexpected error occurred');
