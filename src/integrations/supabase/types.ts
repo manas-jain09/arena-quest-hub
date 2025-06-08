@@ -19,7 +19,7 @@ export type Database = {
         }
         Insert: {
           content?: string | null
-          created_at?: string
+          created_at: string
           id?: string
           question_id?: string | null
           updated_at?: string | null

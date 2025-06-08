@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,42 +12,72 @@ interface ArticleData {
   content: string;
   created_at: string;
   updated_at: string;
-  question?: {
-    title: string;
-    difficulty: string;
-  };
+}
+
+interface QuestionData {
+  id: string;
+  title: string;
+  difficulty: string;
 }
 
 export function ArticleView() {
   const { questionId } = useParams();
   const [article, setArticle] = useState<ArticleData | null>(null);
+  const [question, setQuestion] = useState<QuestionData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchArticle = async () => {
+    const fetchArticleAndQuestion = async () => {
       try {
         setIsLoading(true);
+        console.log('Fetching article for question ID:', questionId);
         
-        // Fetch article with question details
-        const { data, error } = await supabase
+        if (!questionId) {
+          console.error('No question ID provided');
+          toast.error('No question ID provided');
+          return;
+        }
+
+        // First, fetch the article using question_id
+        const { data: articleData, error: articleError } = await supabase
           .from('articles')
-          .select(`
-            *,
-            question:question_id (
-              title, 
-              difficulty
-            )
-          `)
+          .select('*')
           .eq('question_id', questionId)
-          .single();
+          .maybeSingle();
         
-        if (error) {
-          console.error('Error fetching article:', error);
+        if (articleError) {
+          console.error('Error fetching article:', articleError);
           toast.error('Failed to load article');
           return;
         }
-        
-        setArticle(data);
+
+        console.log('Article data:', articleData);
+
+        if (!articleData) {
+          console.log('No article found for question ID:', questionId);
+          setArticle(null);
+          setQuestion(null);
+          return;
+        }
+
+        // Set the article data
+        setArticle(articleData);
+
+        // Now fetch the question details
+        const { data: questionData, error: questionError } = await supabase
+          .from('questions')
+          .select('id, title, difficulty')
+          .eq('id', questionId)
+          .maybeSingle();
+
+        if (questionError) {
+          console.error('Error fetching question:', questionError);
+          // Don't show error for question, as article is the main content
+        } else {
+          console.log('Question data:', questionData);
+          setQuestion(questionData);
+        }
+
       } catch (error) {
         console.error('Unexpected error:', error);
         toast.error('An unexpected error occurred');
@@ -56,7 +87,7 @@ export function ArticleView() {
     };
     
     if (questionId) {
-      fetchArticle();
+      fetchArticleAndQuestion();
     }
   }, [questionId]);
 
@@ -96,14 +127,14 @@ export function ArticleView() {
         >
           <div className="bg-gradient-to-r from-gray-50 to-white p-8 border-b border-gray-100">
             <div className="flex items-center gap-3 mb-4">
-              {article.question?.difficulty && (
-                <Badge className={`px-3 py-1 text-xs font-medium ${getDifficultyClass(article.question.difficulty)}`}>
-                  {article.question.difficulty}
+              {question?.difficulty && (
+                <Badge className={`px-3 py-1 text-xs font-medium ${getDifficultyClass(question.difficulty)}`}>
+                  {question.difficulty}
                 </Badge>
               )}
             </div>
             <h1 className="text-3xl font-bold text-gray-800">
-              {article.question?.title || 'Article'}
+              {question?.title || 'Article'}
             </h1>
             <div className="mt-2 text-sm text-gray-500">
               Last updated: {new Date(article.updated_at).toLocaleDateString()}
@@ -125,6 +156,7 @@ export function ArticleView() {
         >
           <h2 className="text-xl text-gray-700 mb-4">Article not found</h2>
           <p className="text-gray-500">The article you're looking for could not be found.</p>
+          <p className="text-sm text-gray-400 mt-2">Question ID: {questionId}</p>
         </motion.div>
       )}
     </div>
