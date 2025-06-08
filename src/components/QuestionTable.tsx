@@ -403,12 +403,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                       </TableCell>
                     )}
                     <TableCell>
-                      <Link 
-                        to={`/articles/${question.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1"
-                      >
+                      <Link to={`/articles/${question.id}`}>
                         <Button
                           variant="outline"
                           size="sm"

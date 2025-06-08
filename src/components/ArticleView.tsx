@@ -27,19 +27,20 @@ export function ArticleView() {
     const fetchArticle = async () => {
       try {
         setIsLoading(true);
+        console.log('Fetching article for question ID:', questionId);
         
         // Fetch article with question details
         const { data, error } = await supabase
           .from('articles')
           .select(`
             *,
-            question:question_id (
+            question:questions!inner (
               title, 
               difficulty
             )
           `)
           .eq('question_id', questionId)
-          .single();
+          .maybeSingle();
         
         if (error) {
           console.error('Error fetching article:', error);
@@ -47,6 +48,7 @@ export function ArticleView() {
           return;
         }
         
+        console.log('Article data:', data);
         setArticle(data);
       } catch (error) {
         console.error('Unexpected error:', error);
@@ -114,7 +116,7 @@ export function ArticleView() {
           <div className="p-8">
             <div 
               className="prose prose-slate max-w-none forum-content" 
-              dangerouslySetInnerHTML={{ __html: article.content }} 
+              dangerouslySetInnerHTML={{ __html: article.content || 'No content available for this article.' }} 
             />
           </div>
         </motion.div>
