@@ -152,3 +152,24 @@
     @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
   }
 }
+
+/* Enhanced toast styling - smaller and more compact */
+[data-sonner-toaster] {
+  @apply !max-w-xs;
+}
+
+[data-sonner-toast] {
+  @apply !p-3 !text-sm !min-h-0;
+}
+
+[data-sonner-toast] [data-title] {
+  @apply !text-sm !font-medium !mb-1;
+}
+
+[data-sonner-toast] [data-description] {
+  @apply !text-xs !opacity-80 !leading-tight;
+}
+
+[data-sonner-toast] [data-close-button] {
+  @apply !w-4 !h-4 !top-2 !right-2;
+}

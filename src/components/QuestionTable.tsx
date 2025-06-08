@@ -233,81 +233,13 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
     }
   };
 
-  const handlePracticeClick = async (questionId: string) => {
-    try {
-      // First, get the question_id from the questions table
-      const { data: questionData, error: questionError } = await supabase
-        .from('questions')
-        .select('question_id')
-        .eq('id', questionId)
-        .single();
-
-      if (questionError || !questionData?.question_id) {
-        toast({
-          title: "Error",
-          description: "Failed to get question details",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Generate a random UUID for the token
-      const autoLoginToken = crypto.randomUUID();
-
-      // Insert the token directly into auto_login_tokens table
-      const { error: tokenError } = await supabase
-        .from('auto_login_tokens')
-        .insert({
-          user_id: userId,
-          token: autoLoginToken,
-          expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 minutes from now
-        });
-
-      if (tokenError) {
-        console.error('Error creating token:', tokenError);
-        toast({
-          title: "Error",
-          description: "Failed to create login token",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Send POST request to coding-question-api
-      const response = await fetch('https://tafvjwurzgpugcfidbfv.supabase.co/functions/v1/coding-question-api', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: userId,
-          questionId: questionData.question_id,
-          autoLoginToken: autoLoginToken
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
-      if (result.loginUrl) {
-        // Redirect to the received loginUrl
-        window.open(result.loginUrl, '_blank');
-      } else {
-        toast({
-          title: "Error",
-          description: "No redirect URL received",
-          variant: "destructive",
-        });
-      }
-
-    } catch (error: any) {
-      console.error('Practice click error:', error);
+  const handlePracticeClick = (question: Question) => {
+    if (question.practice_link) {
+      window.open(question.practice_link, '_blank');
+    } else {
       toast({
         title: "Error",
-        description: `Failed to start practice session: ${error.message}`,
+        description: "No practice link available for this question",
         variant: "destructive",
       });
     }
@@ -461,7 +393,7 @@ export const QuestionTable = ({ topics: initialTopics, learningPathTitle, userId
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handlePracticeClick(question.id);
+                            handlePracticeClick(question);
                           }}
                           className="text-arena-red hover:text-white hover:bg-arena-red inline-flex items-center gap-1 border-arena-red/30"
                         >

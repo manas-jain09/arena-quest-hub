@@ -9,17 +9,15 @@ const AutoLogin = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(true);
-  const [status, setStatus] = useState('Validating login token...');
 
   useEffect(() => {
     const processAutoLogin = async () => {
       const token = searchParams.get('token');
 
       if (!token) {
-        setStatus('Invalid login link');
         toast({
           title: "Error",
-          description: "Invalid auto-login token",
+          description: "Invalid login link",
           variant: "destructive",
         });
         setTimeout(() => navigate('/'), 3000);
@@ -35,7 +33,6 @@ const AutoLogin = () => {
           .single();
 
         if (tokenError || !tokenData) {
-          setStatus('Invalid or expired token');
           toast({
             title: "Error",
             description: "Invalid or expired auto-login token",
@@ -50,7 +47,6 @@ const AutoLogin = () => {
         const expiresAt = new Date(tokenData.expires_at);
         
         if (now > expiresAt) {
-          setStatus('Login token has expired');
           toast({
             title: "Error",
             description: "Auto-login token has expired",
@@ -62,7 +58,6 @@ const AutoLogin = () => {
 
         // Check if token was already used
         if (tokenData.used) {
-          setStatus('Login token has already been used');
           toast({
             title: "Error",
             description: "Auto-login token has already been used",
@@ -86,7 +81,6 @@ const AutoLogin = () => {
           .single();
 
         if (userError || !userData) {
-          setStatus('User not found');
           toast({
             title: "Error",
             description: "User account not found",
@@ -100,7 +94,6 @@ const AutoLogin = () => {
         localStorage.setItem('userId', userData.id);
         localStorage.setItem('userData', JSON.stringify(userData));
 
-        setStatus('Login successful! Redirecting...');
         toast({
           title: "Success",
           description: `Welcome back, ${userData.username}!`,
@@ -111,7 +104,6 @@ const AutoLogin = () => {
 
       } catch (error) {
         console.error('Auto-login error:', error);
-        setStatus('An error occurred during login');
         toast({
           title: "Error",
           description: "An unexpected error occurred during auto-login",
@@ -127,39 +119,22 @@ const AutoLogin = () => {
   }, [searchParams, navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
       <motion.div 
-        className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4"
-        initial={{ opacity: 0, y: 20 }}
+        className="text-center"
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
       >
-        <div className="text-center">
-          <motion.div
-            className="mb-6"
-            animate={{ rotate: isProcessing ? 360 : 0 }}
-            transition={{ duration: 1, repeat: isProcessing ? Infinity : 0, ease: "linear" }}
-          >
-            <div className="w-16 h-16 bg-arena-red rounded-full flex items-center justify-center mx-auto">
-              <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          </motion.div>
-          
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Auto Login</h1>
-          <p className="text-gray-600 mb-4">{status}</p>
-          
-          {!isProcessing && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              <p className="text-sm text-gray-500">
-                You will be redirected automatically...
-              </p>
-            </motion.div>
-          )}
-        </div>
+        <motion.div
+          className="mb-4"
+          animate={{ rotate: isProcessing ? 360 : 0 }}
+          transition={{ duration: 1, repeat: isProcessing ? Infinity : 0, ease: "linear" }}
+        >
+          <div className="w-8 h-8 border-2 border-arena-red border-t-transparent rounded-full animate-spin mx-auto"></div>
+        </motion.div>
+        
+        <p className="text-sm text-gray-600 font-medium">Crafting your experience</p>
       </motion.div>
     </div>
   );
