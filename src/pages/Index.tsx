@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import { AuthCard } from '@/components/AuthCard';
 import { Navbar } from '@/components/Navbar';
 import { HomePage } from '@/pages/HomePage';
 import { Toaster } from '@/components/ui/toaster';
@@ -67,20 +66,6 @@ const Index = () => {
     }
   }, [user?.id]);
 
-  const handleLogin = (userData: User) => {
-    setUser(userData);
-    // Store full user data in localStorage
-    localStorage.setItem('userId', userData.id);
-    localStorage.setItem('userData', JSON.stringify(userData));
-    
-    toast({
-      title: "Login Successful",
-      description: `Welcome back, ${userData.username}!`,
-    });
-    
-    console.log('User logged in:', userData);
-  };
-
   const handleLogout = () => {
     setUser(null);
     // Clear user data from localStorage on logout
@@ -119,8 +104,19 @@ const Index = () => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-center"
           >
-            <AuthCard onSuccess={handleLogin} />
+            <div className="w-full max-w-md mx-auto mt-10">
+              <div className="bg-white rounded-lg shadow-md p-8">
+                <h1 className="text-2xl font-bold text-arena-red mb-4">Astra</h1>
+                <p className="text-gray-600 mb-6">
+                  Access to this application is only available through secure auto-login links.
+                </p>
+                <p className="text-sm text-gray-500">
+                  Please contact your administrator to receive your personalized login link.
+                </p>
+              </div>
+            </div>
           </motion.div>
         </div>
       )}
