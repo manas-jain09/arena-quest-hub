@@ -109,9 +109,7 @@ const Index = () => {
             <div className="w-full max-w-md mx-auto mt-10">
               <div className="bg-white rounded-lg shadow-md p-8">
                 <h1 className="text-2xl font-bold text-arena-red mb-4">Astra</h1>
-                <p className="text-gray-600 mb-6">
-                  Access to this application is only available through secure auto-login links.
-                </p>
+
                 <p className="text-sm text-gray-500">
                   Please contact your administrator to receive your personalized login link.
                 </p>
