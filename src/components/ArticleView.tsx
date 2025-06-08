@@ -43,7 +43,7 @@ export function ArticleView() {
         // Then fetch the article using question_id
         const { data: articleData, error: articleError } = await supabase
           .from('articles')
-          .select('*')
+          .select('content')
           .eq('question_id', questionId)
           .maybeSingle();
         
